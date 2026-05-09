@@ -35,4 +35,7 @@ public class Benutzer {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "organisation_id", nullable = false)
     private Organisation organisation;
+
+    @Column(name = "dashboard_layout", columnDefinition = "TEXT")
+    private String dashboardLayout;
 }

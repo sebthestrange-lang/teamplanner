@@ -1,21 +1,25 @@
 package de.teamplanner.controller;
 
 import de.teamplanner.dto.TeamAuslastungDTO;
+import de.teamplanner.model.Aufgabe;
+import de.teamplanner.model.Mitarbeiter;
 import de.teamplanner.model.Team;
 import de.teamplanner.model.enums.AufgabenStatus;
 import de.teamplanner.service.AufgabeService;
+import de.teamplanner.service.BenutzerService;
 import de.teamplanner.service.MitarbeiterService;
 import de.teamplanner.service.ProjektService;
 import de.teamplanner.service.TeamService;
 import de.teamplanner.service.TodoService;
-import de.teamplanner.model.Aufgabe;
-import de.teamplanner.model.Mitarbeiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,6 +34,7 @@ public class DashboardController {
     private final ProjektService projektService;
     private final AufgabeService aufgabeService;
     private final TodoService todoService;
+    private final BenutzerService benutzerService;
 
     @GetMapping
     public String dashboard(Model model) {
@@ -44,14 +49,12 @@ public class DashboardController {
         model.addAttribute("heuteFaelligeTodos", todoService.anzahlHeuteFaellig());
         model.addAttribute("ueberfaelligeTodos", todoService.anzahlUeberfaellig());
 
-        // Chart: Aufgaben nach Status
-        model.addAttribute("chartStatusOffen",        aufgabeService.anzahlNachStatus(AufgabenStatus.OFFEN));
+        model.addAttribute("chartStatusOffen",         aufgabeService.anzahlNachStatus(AufgabenStatus.OFFEN));
         model.addAttribute("chartStatusInBearbeitung", aufgabeService.anzahlNachStatus(AufgabenStatus.IN_BEARBEITUNG));
         model.addAttribute("chartStatusAbgeschlossen", aufgabeService.anzahlNachStatus(AufgabenStatus.ABGESCHLOSSEN));
 
-        // Chart + Dashboard: Team-Auslastung
         List<Team> teams = teamService.alleTeams();
-        Map<Long, TeamAuslastungDTO> teamAuslastungen = new java.util.LinkedHashMap<>();
+        Map<Long, TeamAuslastungDTO> teamAuslastungen = new LinkedHashMap<>();
         for (Team t : teams) {
             teamAuslastungen.put(t.getId(), aufgabeService.auslastungFuerTeam(t));
         }
@@ -63,7 +66,21 @@ public class DashboardController {
                 .map(t -> teamAuslastungen.get(t.getId()).aktiv())
                 .collect(Collectors.toList()));
 
+        model.addAttribute("layoutJson", benutzerService.getDashboardLayout());
+
         return "dashboard";
+    }
+
+    @PostMapping("dashboard/layout")
+    public String layoutSpeichern(@RequestParam String layoutJson) {
+        benutzerService.dashboardLayoutSpeichern(layoutJson);
+        return "redirect:/";
+    }
+
+    @PostMapping("dashboard/layout/reset")
+    public String layoutZuruecksetzen() {
+        benutzerService.dashboardLayoutSpeichern(null);
+        return "redirect:/";
     }
 
     private Map<Mitarbeiter, Long> berechneAuslastung() {

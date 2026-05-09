@@ -3,133 +3,148 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}"
       lang="de">
-<head><title>Dashboard</title></head>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@10.3.1/dist/gridstack.min.css"/>
+    <style>
+        .grid-stack { background: transparent; }
+        .grid-stack-item-content { overflow: auto; border-radius: 0.5rem; }
+        .grid-stack .grid-stack-item > .grid-stack-item-content { inset: 4px; }
+        #btn-save, #btn-reset { display: none; }
+    </style>
+</head>
 <body>
 <main layout:fragment="content">
 
-    <div class="page-header mb-4">
-        <h1 class="page-title">Dashboard</h1>
-        <p class="text-muted mb-0">Übersicht über alle Aktivitäten</p>
-    </div>
-
-    <!-- Kennzahlen -->
-    <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="stat-icon bg-primary-soft text-primary">
-                    <i class="bi bi-people-fill"></i>
-                </div>
-                <div>
-                    <div class="stat-value" th:text="${anzahlTeams}">0</div>
-                    <div class="stat-label">Teams</div>
-                </div>
-            </div>
+    <div class="page-header mb-3 d-flex justify-content-between align-items-start">
+        <div>
+            <h1 class="page-title">Dashboard</h1>
+            <p class="text-muted mb-0">Übersicht über alle Aktivitäten</p>
         </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="stat-icon bg-indigo-soft text-indigo">
-                    <i class="bi bi-person-badge-fill"></i>
-                </div>
-                <div>
-                    <div class="stat-value" th:text="${anzahlMitarbeiter}">0</div>
-                    <div class="stat-label">Mitarbeiter</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="stat-icon bg-warning-soft text-warning">
-                    <i class="bi bi-check2-square"></i>
-                </div>
-                <div>
-                    <div class="stat-value" th:text="${offeneAufgaben}">0</div>
-                    <div class="stat-label">Offene Aufgaben</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="stat-card">
-                <div class="stat-icon bg-danger-soft text-danger">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                </div>
-                <div>
-                    <div class="stat-value text-danger" th:text="${ueberfaelligeAufgaben}">0</div>
-                    <div class="stat-label">Überfällig</div>
-                </div>
-            </div>
+        <div class="d-flex gap-2 align-items-center">
+            <button id="btn-edit" class="btn btn-sm btn-outline-secondary" onclick="toggleEdit()">
+                <i class="bi bi-pencil-square me-1"></i>Anpassen
+            </button>
+            <form id="save-form" method="post" th:action="@{/dashboard/layout}">
+                <input type="hidden" name="layoutJson" id="layout-json"/>
+                <button type="button" id="btn-save" class="btn btn-sm btn-primary" onclick="saveLayout()">
+                    <i class="bi bi-floppy me-1"></i>Speichern
+                </button>
+            </form>
+            <form method="post" th:action="@{/dashboard/layout/reset}">
+                <button type="submit" id="btn-reset" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Zurücksetzen
+                </button>
+            </form>
         </div>
     </div>
 
-    <div class="row g-4">
+    <div class="grid-stack" id="main-grid">
 
-        <!-- Heute fällige Aufgaben -->
-        <div class="col-lg-8">
-            <div class="card card-custom h-100">
-                <div class="card-header-custom d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-calendar-day me-2 text-warning"></i>Heute fällig</h5>
-                    <span class="badge bg-warning text-dark"
-                          th:text="${#lists.size(heuteFaelligeAufgaben)}">0</span>
-                </div>
-                <div class="card-body p-0">
-                    <div th:if="${#lists.isEmpty(heuteFaelligeAufgaben)}" class="empty-state py-4">
-                        <i class="bi bi-calendar-check text-muted" style="font-size:2rem"></i>
-                        <p class="text-muted mt-2 mb-0">Keine Aufgaben heute fällig</p>
-                    </div>
-                    <div th:unless="${#lists.isEmpty(heuteFaelligeAufgaben)}" class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Aufgabe</th>
-                                <th>Priorität</th>
-                                <th>Mitarbeiter</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="aufgabe : ${heuteFaelligeAufgaben}">
-                                <td>
-                                    <a th:href="@{/aufgaben/{id}(id=${aufgabe.id})}"
-                                       th:text="${aufgabe.titel}"
-                                       class="text-decoration-none fw-medium link-dark"></a>
-                                </td>
-                                <td>
-                                    <span th:class="'badge rounded-pill bg-' + ${aufgabe.prioritaet.bootstrapKlasse}"
-                                          th:text="${aufgabe.prioritaet.bezeichnung}"></span>
-                                </td>
-                                <td th:text="${aufgabe.mitarbeiter?.vollstaendigerName ?: '—'}"></td>
-                                <td>
-                                    <span th:class="'badge rounded-pill bg-' + ${aufgabe.status.bootstrapKlasse}"
-                                          th:text="${aufgabe.status.bezeichnung}"></span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <!-- Stat: Teams (1 breit) -->
+        <div class="grid-stack-item" gs-x="0" gs-y="0" gs-w="3" gs-h="2" gs-id="stat-teams">
+            <div class="grid-stack-item-content">
+                <div class="stat-card h-100 m-0 rounded-3">
+                    <div class="stat-icon bg-primary-soft text-primary"><i class="bi bi-people-fill"></i></div>
+                    <div>
+                        <div class="stat-value" th:text="${anzahlTeams}">0</div>
+                        <div class="stat-label">Teams</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Todo-Widget -->
-        <div class="col-lg-4">
-            <div class="card card-custom">
-                <div class="card-header-custom d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-list-check me-2 text-primary"></i>Todos</h5>
-                    <a th:href="@{/todos}" class="btn btn-sm btn-outline-primary">Alle</a>
+        <!-- Stat: Mitarbeiter (1 breit) -->
+        <div class="grid-stack-item" gs-x="3" gs-y="0" gs-w="3" gs-h="2" gs-id="stat-mitarbeiter">
+            <div class="grid-stack-item-content">
+                <div class="stat-card h-100 m-0 rounded-3">
+                    <div class="stat-icon bg-indigo-soft text-indigo"><i class="bi bi-person-badge-fill"></i></div>
+                    <div>
+                        <div class="stat-value" th:text="${anzahlMitarbeiter}">0</div>
+                        <div class="stat-label">Mitarbeiter</div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-muted small">Offen</span>
-                        <span class="fw-semibold" th:text="${offeneTodos}">0</span>
+            </div>
+        </div>
+
+        <!-- Stat: Offene Aufgaben (1 breit) -->
+        <div class="grid-stack-item" gs-x="6" gs-y="0" gs-w="3" gs-h="2" gs-id="stat-aufgaben">
+            <div class="grid-stack-item-content">
+                <div class="stat-card h-100 m-0 rounded-3">
+                    <div class="stat-icon bg-warning-soft text-warning"><i class="bi bi-check2-square"></i></div>
+                    <div>
+                        <div class="stat-value" th:text="${offeneAufgaben}">0</div>
+                        <div class="stat-label">Offene Aufgaben</div>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-muted small">Heute fällig</span>
-                        <span class="fw-semibold text-warning" th:text="${heuteFaelligeTodos}">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stat: Überfällig (1 breit) -->
+        <div class="grid-stack-item" gs-x="9" gs-y="0" gs-w="3" gs-h="2" gs-id="stat-ueberfaellig">
+            <div class="grid-stack-item-content">
+                <div class="stat-card h-100 m-0 rounded-3">
+                    <div class="stat-icon bg-danger-soft text-danger"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                    <div>
+                        <div class="stat-value text-danger" th:text="${ueberfaelligeAufgaben}">0</div>
+                        <div class="stat-label">Überfällig</div>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">Überfällig</span>
-                        <span class="fw-semibold text-danger" th:text="${ueberfaelligeTodos}">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Heute fällig (2+ breit) -->
+        <div class="grid-stack-item" gs-x="0" gs-y="2" gs-w="8" gs-h="4" gs-id="heute-faellig">
+            <div class="grid-stack-item-content">
+                <div class="card card-custom h-100">
+                    <div class="card-header-custom d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-calendar-day me-2 text-warning"></i>Heute fällig</h5>
+                        <span class="badge bg-warning text-dark" th:text="${#lists.size(heuteFaelligeAufgaben)}">0</span>
                     </div>
-                    <div class="mt-3">
+                    <div class="card-body p-0 overflow-auto">
+                        <div th:if="${#lists.isEmpty(heuteFaelligeAufgaben)}" class="empty-state py-4">
+                            <i class="bi bi-calendar-check text-muted" style="font-size:2rem"></i>
+                            <p class="text-muted mt-2 mb-0">Keine Aufgaben heute fällig</p>
+                        </div>
+                        <div th:unless="${#lists.isEmpty(heuteFaelligeAufgaben)}" class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead><tr><th>Aufgabe</th><th>Priorität</th><th>Mitarbeiter</th><th>Status</th></tr></thead>
+                                <tbody>
+                                    <tr th:each="aufgabe : ${heuteFaelligeAufgaben}">
+                                        <td><a th:href="@{/aufgaben/{id}(id=${aufgabe.id})}" th:text="${aufgabe.titel}" class="text-decoration-none fw-medium link-dark"></a></td>
+                                        <td><span th:class="'badge rounded-pill bg-' + ${aufgabe.prioritaet.bootstrapKlasse}" th:text="${aufgabe.prioritaet.bezeichnung}"></span></td>
+                                        <td th:text="${aufgabe.mitarbeiter?.vollstaendigerName ?: '—'}"></td>
+                                        <td><span th:class="'badge rounded-pill bg-' + ${aufgabe.status.bootstrapKlasse}" th:text="${aufgabe.status.bezeichnung}"></span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Todos (1 breit) -->
+        <div class="grid-stack-item" gs-x="8" gs-y="2" gs-w="4" gs-h="4" gs-id="todos">
+            <div class="grid-stack-item-content">
+                <div class="card card-custom h-100">
+                    <div class="card-header-custom d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-list-check me-2 text-primary"></i>Todos</h5>
+                        <a th:href="@{/todos}" class="btn btn-sm btn-outline-primary">Alle</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted small">Offen</span>
+                            <span class="fw-semibold" th:text="${offeneTodos}">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted small">Heute fällig</span>
+                            <span class="fw-semibold text-warning" th:text="${heuteFaelligeTodos}">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <span class="text-muted small">Überfällig</span>
+                            <span class="fw-semibold text-danger" th:text="${ueberfaelligeTodos}">0</span>
+                        </div>
                         <a th:href="@{/todos/neu}" class="btn btn-primary btn-sm w-100">
                             <i class="bi bi-plus-lg me-1"></i>Neues Todo
                         </a>
@@ -138,209 +153,240 @@
             </div>
         </div>
 
-        <!-- Aktivitätsfeed -->
-        <div class="col-lg-6">
-            <div class="card card-custom">
-                <div class="card-header-custom">
-                    <h5 class="mb-0"><i class="bi bi-activity me-2 text-primary"></i>Letzte Aktivitäten</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div th:if="${#lists.isEmpty(letzteAktivitaeten)}" class="empty-state py-4">
-                        <p class="text-muted mb-0">Noch keine Aktivitäten</p>
+        <!-- Letzte Aktivitäten (2 breit) -->
+        <div class="grid-stack-item" gs-x="0" gs-y="6" gs-w="6" gs-h="5" gs-id="aktivitaeten">
+            <div class="grid-stack-item-content">
+                <div class="card card-custom h-100">
+                    <div class="card-header-custom">
+                        <h5 class="mb-0"><i class="bi bi-activity me-2 text-primary"></i>Letzte Aktivitäten</h5>
                     </div>
-                    <ul th:unless="${#lists.isEmpty(letzteAktivitaeten)}" class="list-group list-group-flush">
-                        <li th:each="aufgabe : ${letzteAktivitaeten}"
-                            class="list-group-item px-3 py-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <span th:class="'badge rounded-pill bg-' + ${aufgabe.status.bootstrapKlasse} + ' flex-shrink-0'"
-                                      th:text="${aufgabe.status.bezeichnung}"></span>
-                                <a th:href="@{/aufgaben/{id}(id=${aufgabe.id})}"
-                                   th:text="${aufgabe.titel}"
-                                   class="text-decoration-none text-dark small fw-medium text-truncate"></a>
-                            </div>
-                        </li>
-                    </ul>
+                    <div class="card-body p-0 overflow-auto">
+                        <div th:if="${#lists.isEmpty(letzteAktivitaeten)}" class="empty-state py-4">
+                            <p class="text-muted mb-0">Noch keine Aktivitäten</p>
+                        </div>
+                        <ul th:unless="${#lists.isEmpty(letzteAktivitaeten)}" class="list-group list-group-flush">
+                            <li th:each="aufgabe : ${letzteAktivitaeten}" class="list-group-item px-3 py-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span th:class="'badge rounded-pill bg-' + ${aufgabe.status.bootstrapKlasse} + ' flex-shrink-0'" th:text="${aufgabe.status.bezeichnung}"></span>
+                                    <a th:href="@{/aufgaben/{id}(id=${aufgabe.id})}" th:text="${aufgabe.titel}" class="text-decoration-none text-dark small fw-medium text-truncate"></a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Auslastung (Mitarbeiter-Liste) -->
-        <div class="col-lg-6">
-            <div class="card card-custom">
-                <div class="card-header-custom d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2 text-indigo"></i>Auslastung Mitarbeiter</h5>
-                    <a th:href="@{/mitarbeiter}" class="btn btn-sm btn-outline-secondary">Alle</a>
-                </div>
-                <div class="card-body p-0">
-                    <div th:if="${#maps.isEmpty(auslastung)}" class="empty-state py-4">
-                        <p class="text-muted mb-0">Keine offenen Aufgaben</p>
+        <!-- Auslastung Mitarbeiter (2 breit) -->
+        <div class="grid-stack-item" gs-x="6" gs-y="6" gs-w="6" gs-h="5" gs-id="auslastung">
+            <div class="grid-stack-item-content">
+                <div class="card card-custom h-100">
+                    <div class="card-header-custom d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2 text-indigo"></i>Auslastung Mitarbeiter</h5>
+                        <a th:href="@{/mitarbeiter}" class="btn btn-sm btn-outline-secondary">Alle</a>
                     </div>
-                    <ul th:unless="${#maps.isEmpty(auslastung)}" class="list-group list-group-flush">
-                        <li th:each="eintrag : ${auslastung}"
-                            class="list-group-item px-3 py-2 list-group-item-action">
-                            <a th:href="@{/mitarbeiter/{id}(id=${eintrag.key.id})}"
-                               class="text-decoration-none d-flex align-items-center gap-3">
-                                <div class="avatar-sm flex-shrink-0"
-                                     th:style="'background-color:' + ${eintrag.key.team?.farbe ?: '#6366f1'}"
-                                     th:text="${eintrag.key.initialen}"></div>
-                                <div class="flex-grow-1">
-                                    <div class="small fw-medium text-dark"
-                                         th:text="${eintrag.key.vollstaendigerName}"></div>
-                                    <div class="small text-muted"
-                                         th:text="${eintrag.key.team?.name ?: 'Kein Team'}"></div>
-                                </div>
-                                <span class="badge bg-warning text-dark"
-                                      th:text="${eintrag.value} + ' offen'"></span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Teams-Übersicht -->
-        <div class="col-lg-6">
-            <div class="card card-custom">
-                <div class="card-header-custom d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-people-fill me-2 text-primary"></i>Teams</h5>
-                    <a th:href="@{/teams}" class="btn btn-sm btn-outline-secondary">Alle</a>
-                </div>
-                <div class="card-body p-0">
-                    <div th:if="${#lists.isEmpty(dashboardTeams)}" class="empty-state py-4">
-                        <p class="text-muted mb-0">Noch keine Teams vorhanden</p>
-                    </div>
-                    <ul th:unless="${#lists.isEmpty(dashboardTeams)}" class="list-group list-group-flush">
-                        <li th:each="team : ${dashboardTeams}"
-                            class="list-group-item px-3 py-2 list-group-item-action">
-                            <a th:href="@{/teams/{id}(id=${team.id})}"
-                               class="text-decoration-none d-flex align-items-center gap-3">
-                                <div class="team-color-dot flex-shrink-0"
-                                     th:style="'background-color:' + ${team.farbe}"></div>
-                                <div class="flex-grow-1">
-                                    <div class="small fw-medium text-dark" th:text="${team.name}"></div>
-                                    <div class="small text-muted"
-                                         th:with="al=${dashboardTeamAuslastungen[team.id]}"
-                                         th:text="${al.aktiv()} + ' aktive / ' + ${al.gesamt()} + ' Aufgaben'"></div>
-                                </div>
-                                <div th:with="al=${dashboardTeamAuslastungen[team.id]}"
-                                     style="width:60px">
-                                    <div class="progress" style="height:5px">
-                                        <div th:class="'progress-bar bg-' + ${al.bootstrapFarbe()}"
-                                             role="progressbar"
-                                             th:style="'width:' + ${al.auslastungProzent()} + '%'"></div>
+                    <div class="card-body p-0 overflow-auto">
+                        <div th:if="${#maps.isEmpty(auslastung)}" class="empty-state py-4">
+                            <p class="text-muted mb-0">Keine offenen Aufgaben</p>
+                        </div>
+                        <ul th:unless="${#maps.isEmpty(auslastung)}" class="list-group list-group-flush">
+                            <li th:each="eintrag : ${auslastung}" class="list-group-item px-3 py-2 list-group-item-action">
+                                <a th:href="@{/mitarbeiter/{id}(id=${eintrag.key.id})}" class="text-decoration-none d-flex align-items-center gap-3">
+                                    <div class="avatar-sm flex-shrink-0"
+                                         th:style="'background-color:' + ${eintrag.key.team?.farbe ?: '#6366f1'}"
+                                         th:text="${eintrag.key.initialen}"></div>
+                                    <div class="flex-grow-1">
+                                        <div class="small fw-medium text-dark" th:text="${eintrag.key.vollstaendigerName}"></div>
+                                        <div class="small text-muted" th:text="${eintrag.key.team?.name ?: 'Kein Team'}"></div>
                                     </div>
-                                    <div class="text-end small text-muted mt-1"
-                                         th:text="${al.auslastungProzent()} + '%'"></div>
-                                </div>
-                            </a>
-                        </li>
-                    </ul>
+                                    <span class="badge bg-warning text-dark" th:text="${eintrag.value} + ' offen'"></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Chart: Aufgaben nach Status -->
-        <div class="col-lg-5">
-            <div class="card card-custom h-100">
-                <div class="card-header-custom">
-                    <h5 class="mb-0"><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Aufgaben nach Status</h5>
-                </div>
-                <div class="card-body d-flex align-items-center justify-content-center">
-                    <canvas id="chartStatus" style="max-height:260px"></canvas>
+        <!-- Teams (2 breit) -->
+        <div class="grid-stack-item" gs-x="0" gs-y="11" gs-w="6" gs-h="5" gs-id="teams">
+            <div class="grid-stack-item-content">
+                <div class="card card-custom h-100">
+                    <div class="card-header-custom d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-people-fill me-2 text-primary"></i>Teams</h5>
+                        <a th:href="@{/teams}" class="btn btn-sm btn-outline-secondary">Alle</a>
+                    </div>
+                    <div class="card-body p-0 overflow-auto">
+                        <div th:if="${#lists.isEmpty(dashboardTeams)}" class="empty-state py-4">
+                            <p class="text-muted mb-0">Noch keine Teams vorhanden</p>
+                        </div>
+                        <ul th:unless="${#lists.isEmpty(dashboardTeams)}" class="list-group list-group-flush">
+                            <li th:each="team : ${dashboardTeams}" class="list-group-item px-3 py-2 list-group-item-action">
+                                <a th:href="@{/teams/{id}(id=${team.id})}" class="text-decoration-none d-flex align-items-center gap-3">
+                                    <div class="team-color-dot flex-shrink-0" th:style="'background-color:' + ${team.farbe}"></div>
+                                    <div class="flex-grow-1">
+                                        <div class="small fw-medium text-dark" th:text="${team.name}"></div>
+                                        <div class="small text-muted"
+                                             th:with="al=${dashboardTeamAuslastungen[team.id]}"
+                                             th:text="${al.aktiv()} + ' aktive / ' + ${al.gesamt()} + ' Aufgaben'"></div>
+                                    </div>
+                                    <div th:with="al=${dashboardTeamAuslastungen[team.id]}" style="width:60px">
+                                        <div class="progress" style="height:5px">
+                                            <div th:class="'progress-bar bg-' + ${al.bootstrapFarbe()}"
+                                                 role="progressbar"
+                                                 th:style="'width:' + ${al.auslastungProzent()} + '%'"></div>
+                                        </div>
+                                        <div class="text-end small text-muted mt-1" th:text="${al.auslastungProzent()} + '%'"></div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Chart: Team-Auslastung -->
-        <div class="col-lg-7">
-            <div class="card card-custom h-100">
-                <div class="card-header-custom">
-                    <h5 class="mb-0"><i class="bi bi-bar-chart-fill me-2 text-indigo"></i>Team-Auslastung (aktive Aufgaben)</h5>
+        <!-- Chart Status (2 breit) -->
+        <div class="grid-stack-item" gs-x="6" gs-y="11" gs-w="6" gs-h="5" gs-id="chart-status">
+            <div class="grid-stack-item-content">
+                <div class="card card-custom h-100">
+                    <div class="card-header-custom">
+                        <h5 class="mb-0"><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Aufgaben nach Status</h5>
+                    </div>
+                    <div class="card-body d-flex align-items-center justify-content-center">
+                        <canvas id="chartStatus" style="max-height:260px"></canvas>
+                    </div>
                 </div>
-                <div class="card-body d-flex align-items-center">
-                    <canvas id="chartTeam" style="max-height:260px;width:100%"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart Team-Auslastung (volle Breite) -->
+        <div class="grid-stack-item" gs-x="0" gs-y="16" gs-w="12" gs-h="4" gs-id="chart-team">
+            <div class="grid-stack-item-content">
+                <div class="card card-custom h-100">
+                    <div class="card-header-custom">
+                        <h5 class="mb-0"><i class="bi bi-bar-chart-fill me-2 text-indigo"></i>Team-Auslastung (aktive Aufgaben)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="chartTeam" style="max-height:220px;width:100%"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
 
     </div>
+
 </main>
 
 <th:block layout:fragment="scripts">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-<script th:inline="javascript">
-/*<![CDATA[*/
-(function () {
-    Chart.defaults.font.family = "'Inter', 'Segoe UI', sans-serif";
-    Chart.defaults.color = '#64748b';
+    <script src="https://cdn.jsdelivr.net/npm/gridstack@10.3.1/dist/gridstack-all.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+    var grid;
+    var editMode = false;
 
-    // --- Doughnut: Aufgaben nach Status ---
-    var statusOffen        = /*[[${chartStatusOffen}]]*/ 0;
-    var statusInBearbeitung = /*[[${chartStatusInBearbeitung}]]*/ 0;
-    var statusAbgeschlossen = /*[[${chartStatusAbgeschlossen}]]*/ 0;
+    document.addEventListener('DOMContentLoaded', function () {
+        grid = GridStack.init({
+            column: 12,
+            cellHeight: 70,
+            animate: true,
+            float: false,
+            staticGrid: true,
+            margin: 4
+        }, '#main-grid');
 
-    new Chart(document.getElementById('chartStatus'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Offen', 'In Bearbeitung', 'Abgeschlossen'],
-            datasets: [{
-                data: [statusOffen, statusInBearbeitung, statusAbgeschlossen],
-                backgroundColor: ['#94a3b8', '#6366f1', '#22c55e'],
-                borderWidth: 0,
-                hoverOffset: 6
-            }]
-        },
-        options: {
-            cutout: '65%',
-            plugins: {
-                legend: { position: 'bottom', labels: { padding: 16, boxWidth: 12 } },
-                tooltip: {
-                    callbacks: {
-                        label: ctx => ' ' + ctx.label + ': ' + ctx.parsed
-                    }
-                }
-            }
+        // Gespeichertes Layout laden (nur Positionen aktualisieren, keine Elemente entfernen)
+        var savedJson = /*[[${layoutJson}]]*/ null;
+        if (savedJson) {
+            try {
+                var saved = JSON.parse(savedJson);
+                grid.batchUpdate(true);
+                saved.forEach(function(item) {
+                    var el = document.querySelector('#main-grid [gs-id="' + item.id + '"]');
+                    if (el) grid.update(el, {x: item.x, y: item.y, w: item.w, h: item.h});
+                });
+                grid.batchUpdate(false);
+            } catch(e) { console.warn('Layout konnte nicht geladen werden', e); }
         }
-    });
 
-    // --- Horizontal Bar: Team-Auslastung ---
-    var teamNamen  = /*[[${chartTeamNamen}]]*/ [];
-    var teamAktiv  = /*[[${chartTeamAktiv}]]*/ [];
-    var teamFarben = /*[[${chartTeamFarben}]]*/ [];
+        // Charts
+        Chart.defaults.font.family = "'Inter', 'Segoe UI', sans-serif";
+        Chart.defaults.color = '#64748b';
 
-    new Chart(document.getElementById('chartTeam'), {
-        type: 'bar',
-        data: {
-            labels: teamNamen,
-            datasets: [{
-                label: 'Aktive Aufgaben',
-                data: teamAktiv,
-                backgroundColor: teamFarben.map(c => c + 'cc'),
-                borderColor: teamFarben,
-                borderWidth: 2,
-                borderRadius: 6
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            plugins: {
-                legend: { display: false }
+        new Chart(document.getElementById('chartStatus'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Offen', 'In Bearbeitung', 'Abgeschlossen'],
+                datasets: [{
+                    data: [
+                        /*[[${chartStatusOffen}]]*/ 0,
+                        /*[[${chartStatusInBearbeitung}]]*/ 0,
+                        /*[[${chartStatusAbgeschlossen}]]*/ 0
+                    ],
+                    backgroundColor: ['#94a3b8', '#6366f1', '#22c55e'],
+                    borderWidth: 0,
+                    hoverOffset: 6
+                }]
             },
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1, precision: 0 },
-                    grid: { color: '#f1f5f9' }
-                },
-                y: {
-                    grid: { display: false }
+            options: {
+                cutout: '65%',
+                plugins: {
+                    legend: {position: 'bottom', labels: {padding: 16, boxWidth: 12}},
+                    tooltip: {callbacks: {label: ctx => ' ' + ctx.label + ': ' + ctx.parsed}}
                 }
             }
-        }
+        });
+
+        const teamNamen  = /*[[${chartTeamNamen}]]*/ [];
+        const teamAktiv  = /*[[${chartTeamAktiv}]]*/ [];
+        const teamFarben = /*[[${chartTeamFarben}]]*/ [];
+        new Chart(document.getElementById('chartTeam'), {
+            type: 'bar',
+            data: {
+                labels: teamNamen,
+                datasets: [{
+                    label: 'Aktive Aufgaben',
+                    data: teamAktiv,
+                    backgroundColor: teamFarben.map(c => c + 'cc'),
+                    borderColor: teamFarben,
+                    borderWidth: 2,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: {legend: {display: false}},
+                scales: {
+                    x: {beginAtZero: true, ticks: {stepSize: 1, precision: 0}, grid: {color: '#f1f5f9'}},
+                    y: {grid: {display: false}}
+                }
+            }
+        });
     });
-})();
-/*]]>*/
-</script>
+
+    function toggleEdit() {
+        editMode = !editMode;
+        grid.setStatic(!editMode);
+        var btnEdit = document.getElementById('btn-edit');
+        if (editMode) {
+            btnEdit.innerHTML = '<i class="bi bi-x-lg me-1"></i>Abbrechen';
+            btnEdit.className = 'btn btn-sm btn-warning';
+        } else {
+            btnEdit.innerHTML = '<i class="bi bi-pencil-square me-1"></i>Anpassen';
+            btnEdit.className = 'btn btn-sm btn-outline-secondary';
+        }
+        document.getElementById('btn-save').style.display  = editMode ? 'inline-block' : 'none';
+        document.getElementById('btn-reset').style.display = editMode ? 'inline-block' : 'none';
+    }
+
+    function saveLayout() {
+        var items = grid.save(false);
+        document.getElementById('layout-json').value = JSON.stringify(items);
+        document.getElementById('save-form').submit();
+    }
+    /*]]>*/
+    </script>
 </th:block>
 </body>
 </html>

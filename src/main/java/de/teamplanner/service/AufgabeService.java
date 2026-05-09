@@ -32,6 +32,7 @@ public class AufgabeService {
 
     private final AufgabeRepository aufgabeRepository;
     private final OrgContext orgContext;
+    private final AuditService auditService;
 
     private Specification<Aufgabe> byOrg() {
         Long orgId = orgContext.getOrgId();
@@ -65,11 +66,14 @@ public class AufgabeService {
 
     @Transactional
     public Aufgabe speichern(Aufgabe aufgabe) {
-        if (aufgabe.getId() == null) {
+        boolean isNeu = aufgabe.getId() == null;
+        if (isNeu) {
             aufgabe.setOrganisation(orgContext.getOrganisation());
         }
         log.debug("Speichere Aufgabe: {}", aufgabe.getTitel());
-        return aufgabeRepository.save(aufgabe);
+        Aufgabe gespeichert = aufgabeRepository.save(aufgabe);
+        auditService.log("Aufgabe", gespeichert.getId(), isNeu ? "CREATE" : "UPDATE");
+        return gespeichert;
     }
 
     @Transactional
@@ -86,7 +90,9 @@ public class AufgabeService {
         } else if (neuerStatus != AufgabenStatus.ABGESCHLOSSEN) {
             aufgabe.setAbgeschlossenAm(null);
         }
-        return aufgabeRepository.save(aufgabe);
+        Aufgabe gespeichert = aufgabeRepository.save(aufgabe);
+        auditService.log("Aufgabe", aufgabe.getId(), "UPDATE");
+        return gespeichert;
     }
 
     @Transactional
@@ -94,6 +100,7 @@ public class AufgabeService {
         findByIdOrThrow(id);
         log.debug("Lösche Aufgabe mit ID {}", id);
         aufgabeRepository.deleteById(id);
+        auditService.log("Aufgabe", id, "DELETE");
     }
 
     public boolean isUeberfaellig(Aufgabe aufgabe) {

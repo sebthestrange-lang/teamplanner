@@ -16,6 +16,7 @@ public class MeetingService {
 
     private final MeetingRepository meetingRepository;
     private final OrgContext orgContext;
+    private final AuditService auditService;
 
     public List<Meeting> alle() {
         return meetingRepository.findByOrganisationIdOrderByDatumDesc(orgContext.getOrgId());
@@ -28,15 +29,19 @@ public class MeetingService {
 
     @Transactional
     public Meeting speichern(Meeting meeting) {
-        if (meeting.getId() == null) {
+        boolean isNeu = meeting.getId() == null;
+        if (isNeu) {
             meeting.setOrganisation(orgContext.getOrganisation());
         }
-        return meetingRepository.save(meeting);
+        Meeting gespeichert = meetingRepository.save(meeting);
+        auditService.log("Meeting", gespeichert.getId(), isNeu ? "CREATE" : "UPDATE");
+        return gespeichert;
     }
 
     @Transactional
     public void loeschen(Long id) {
         findByIdOrThrow(id);
         meetingRepository.deleteById(id);
+        auditService.log("Meeting", id, "DELETE");
     }
 }

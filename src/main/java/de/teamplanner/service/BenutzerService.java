@@ -27,6 +27,7 @@ public class BenutzerService {
     private final BenutzerRepository benutzerRepository;
     private final OrganisationRepository organisationRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditService auditService;
 
     public List<Benutzer> findAll() {
         return benutzerRepository.findAll();
@@ -65,7 +66,9 @@ public class BenutzerService {
             benutzer.setPasswort(passwordEncoder.encode(dto.getPasswort()));
         }
         log.debug("Speichere Benutzer: {}", benutzer.getBenutzername());
-        return benutzerRepository.save(benutzer);
+        Benutzer gespeichert = benutzerRepository.save(benutzer);
+        auditService.log("Benutzer", gespeichert.getId(), existing == null ? "CREATE" : "UPDATE");
+        return gespeichert;
     }
 
     @Transactional
@@ -77,9 +80,34 @@ public class BenutzerService {
         }
         log.debug("Lösche Benutzer: {}", benutzer.getBenutzername());
         benutzerRepository.deleteById(id);
+        auditService.log("Benutzer", id, "DELETE");
+    }
+
+    @Transactional
+    public void passwortSetzen(Long id, String neuesPasswort) {
+        Benutzer benutzer = findByIdOrThrow(id);
+        benutzer.setPasswort(passwordEncoder.encode(neuesPasswort));
+        benutzerRepository.save(benutzer);
+        auditService.log("Benutzer", id, "PASSWORT_RESET");
     }
 
     public long count() {
         return benutzerRepository.count();
+    }
+
+    public String getDashboardLayout() {
+        String benutzername = SecurityContextHolder.getContext().getAuthentication().getName();
+        return benutzerRepository.findByBenutzername(benutzername)
+                .map(Benutzer::getDashboardLayout)
+                .orElse(null);
+    }
+
+    @Transactional
+    public void dashboardLayoutSpeichern(String layoutJson) {
+        String benutzername = SecurityContextHolder.getContext().getAuthentication().getName();
+        Benutzer benutzer = benutzerRepository.findByBenutzername(benutzername)
+                .orElseThrow(() -> new IllegalStateException("Benutzer nicht gefunden"));
+        benutzer.setDashboardLayout(layoutJson);
+        benutzerRepository.save(benutzer);
     }
 }

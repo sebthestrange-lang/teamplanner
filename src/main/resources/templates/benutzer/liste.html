@@ -54,8 +54,12 @@
                         <td class="text-end">
                             <div class="d-flex gap-2 justify-content-end">
                                 <a th:href="@{/benutzer/{id}/bearbeiten(id=${b.id})}"
-                                   class="btn btn-sm btn-outline-primary">
+                                   class="btn btn-sm btn-outline-primary" title="Bearbeiten">
                                     <i class="bi bi-pencil"></i>
+                                </a>
+                                <a th:href="@{/benutzer/{id}/passwort(id=${b.id})}"
+                                   class="btn btn-sm btn-outline-secondary" title="Passwort setzen">
+                                    <i class="bi bi-key"></i>
                                 </a>
                                 <button type="button"
                                         class="btn btn-sm btn-outline-danger"

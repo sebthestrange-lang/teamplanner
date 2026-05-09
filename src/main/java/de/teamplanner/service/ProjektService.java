@@ -34,6 +34,7 @@ public class ProjektService {
     private final ProjektRepository projektRepository;
     private final AufgabeRepository aufgabeRepository;
     private final OrgContext orgContext;
+    private final AuditService auditService;
 
     private Specification<Projekt> byOrg() {
         Long orgId = orgContext.getOrgId();
@@ -63,11 +64,14 @@ public class ProjektService {
 
     @Transactional
     public Projekt speichern(Projekt projekt) {
-        if (projekt.getId() == null) {
+        boolean isNeu = projekt.getId() == null;
+        if (isNeu) {
             projekt.setOrganisation(orgContext.getOrganisation());
         }
         log.debug("Speichere Projekt: {}", projekt.getName());
-        return projektRepository.save(projekt);
+        Projekt gespeichert = projektRepository.save(projekt);
+        auditService.log("Projekt", gespeichert.getId(), isNeu ? "CREATE" : "UPDATE");
+        return gespeichert;
     }
 
     @Transactional
@@ -75,6 +79,7 @@ public class ProjektService {
         findByIdOrThrow(id);
         log.debug("Lösche Projekt mit ID {}", id);
         projektRepository.deleteById(id);
+        auditService.log("Projekt", id, "DELETE");
     }
 
     public List<Mitarbeiter> getBeteiligteMitarbeiter(Long projektId) {

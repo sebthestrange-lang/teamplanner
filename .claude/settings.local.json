@@ -18,7 +18,13 @@
       "Bash(cmd.exe /c \"netstat -ano | findstr :8080 | findstr LISTENING\")",
       "Bash(awk '/Exception processing template \"error\\\\/500\"/{found=1} !found' /tmp/app8083.log)",
       "Bash(mvn compile *)",
-      "Bash(mvn clean *)"
+      "Bash(mvn clean *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/login)",
+      "Bash(findstr :8080)",
+      "Bash(findstr LISTEN)",
+      "PowerShell(Get-Process *)",
+      "Read(//mnt/c/Users/sebth/AppData/Local/Temp/claude/E--develop-workspace-teamplanner/a1538a7a-982f-4718-8740-6582dbfb9414/tasks/**)",
+      "PowerShell(Start-Process -FilePath \"mvn\" -ArgumentList \"spring-boot:run\", \"-q\" -WorkingDirectory \"E:\\\\develop\\\\workspace\\\\teamplanner\" -NoNewWindow -RedirectStandardOutput \"$env:TEMP\\\\sb-out.txt\" -RedirectStandardError \"$env:TEMP\\\\sb-err.txt\")"
     ]
   }
 }

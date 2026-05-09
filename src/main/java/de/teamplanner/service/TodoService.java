@@ -26,6 +26,7 @@ public class TodoService {
 
     private final TodoRepository todoRepository;
     private final OrgContext orgContext;
+    private final AuditService auditService;
 
     private Specification<Todo> byOrg() {
         Long orgId = orgContext.getOrgId();
@@ -64,11 +65,14 @@ public class TodoService {
 
     @Transactional
     public Todo speichern(Todo todo) {
-        if (todo.getId() == null) {
+        boolean isNeu = todo.getId() == null;
+        if (isNeu) {
             todo.setOrganisation(orgContext.getOrganisation());
         }
         log.debug("Speichere Todo: {}", todo.getTitel());
-        return todoRepository.save(todo);
+        Todo gespeichert = todoRepository.save(todo);
+        auditService.log("Todo", gespeichert.getId(), isNeu ? "CREATE" : "UPDATE");
+        return gespeichert;
     }
 
     @Transactional
@@ -76,7 +80,9 @@ public class TodoService {
         Todo todo = findByIdOrThrow(id);
         todo.setErledigt(!todo.isErledigt());
         todo.setErledigtAm(todo.isErledigt() ? LocalDateTime.now() : null);
-        return todoRepository.save(todo);
+        Todo gespeichert = todoRepository.save(todo);
+        auditService.log("Todo", id, "UPDATE");
+        return gespeichert;
     }
 
     @Transactional
@@ -84,6 +90,7 @@ public class TodoService {
         findByIdOrThrow(id);
         log.debug("Lösche Todo mit ID {}", id);
         todoRepository.deleteById(id);
+        auditService.log("Todo", id, "DELETE");
     }
 
     public boolean isUeberfaellig(Todo todo) {

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      lang="de">
+<head><title>Passwort setzen</title></head>
+<body>
+<main layout:fragment="content">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/benutzer}">Benutzer</a></li>
+            <li class="breadcrumb-item active">Passwort setzen</li>
+        </ol>
+    </nav>
+
+    <div class="page-header mb-4">
+        <h1 class="page-title">Passwort setzen</h1>
+        <p class="text-muted mb-0">Benutzer: <strong th:text="${benutzer.benutzername}"></strong></p>
+    </div>
+
+    <div class="card card-custom" style="max-width:480px">
+        <div class="card-body p-4">
+            <div th:if="${fehler}" class="alert alert-danger mb-3" th:text="${fehler}"></div>
+            <form th:action="@{/benutzer/{id}/passwort(id=${benutzer.id})}" method="post">
+                <div class="mb-3">
+                    <label for="neuesPasswort" class="form-label">Neues Passwort <span class="text-danger">*</span></label>
+                    <input type="password" id="neuesPasswort" name="neuesPasswort"
+                           class="form-control" autocomplete="new-password" required minlength="8">
+                    <div class="form-text">Mindestens 8 Zeichen</div>
+                </div>
+                <div class="mb-4">
+                    <label for="passwortBestaetigung" class="form-label">Bestätigung <span class="text-danger">*</span></label>
+                    <input type="password" id="passwortBestaetigung" name="passwortBestaetigung"
+                           class="form-control" autocomplete="new-password" required>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>Speichern
+                    </button>
+                    <a th:href="@{/benutzer}" class="btn btn-light">Abbrechen</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

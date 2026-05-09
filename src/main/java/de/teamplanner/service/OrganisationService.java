@@ -14,6 +14,7 @@ import java.util.List;
 public class OrganisationService {
 
     private final OrganisationRepository organisationRepository;
+    private final AuditService auditService;
 
     public List<Organisation> alle() {
         return organisationRepository.findAllByOrderByNameAsc();
@@ -26,11 +27,15 @@ public class OrganisationService {
 
     @Transactional
     public Organisation speichern(Organisation organisation) {
-        return organisationRepository.save(organisation);
+        boolean isNeu = organisation.getId() == null;
+        Organisation gespeichert = organisationRepository.save(organisation);
+        auditService.log("Organisation", gespeichert.getId(), isNeu ? "CREATE" : "UPDATE");
+        return gespeichert;
     }
 
     @Transactional
     public void loeschen(Long id) {
         organisationRepository.deleteById(id);
+        auditService.log("Organisation", id, "DELETE");
     }
 }

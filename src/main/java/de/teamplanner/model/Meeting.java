@@ -27,6 +27,10 @@ public class Meeting {
     @JoinColumn(name = "organisation_id", nullable = false)
     private Organisation organisation;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private Team team;
+
     @NotBlank(message = "Titel darf nicht leer sein")
     @Column(nullable = false)
     private String titel;

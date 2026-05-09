@@ -25,6 +25,7 @@ public class MitarbeiterService {
 
     private final MitarbeiterRepository mitarbeiterRepository;
     private final OrgContext orgContext;
+    private final AuditService auditService;
 
     private Specification<Mitarbeiter> byOrg() {
         Long orgId = orgContext.getOrgId();
@@ -54,11 +55,14 @@ public class MitarbeiterService {
 
     @Transactional
     public Mitarbeiter speichern(Mitarbeiter mitarbeiter) {
-        if (mitarbeiter.getId() == null) {
+        boolean isNeu = mitarbeiter.getId() == null;
+        if (isNeu) {
             mitarbeiter.setOrganisation(orgContext.getOrganisation());
         }
         log.debug("Speichere Mitarbeiter: {} {}", mitarbeiter.getVorname(), mitarbeiter.getNachname());
-        return mitarbeiterRepository.save(mitarbeiter);
+        Mitarbeiter gespeichert = mitarbeiterRepository.save(mitarbeiter);
+        auditService.log("Mitarbeiter", gespeichert.getId(), isNeu ? "CREATE" : "UPDATE");
+        return gespeichert;
     }
 
     @Transactional
@@ -66,6 +70,7 @@ public class MitarbeiterService {
         findByIdOrThrow(id);
         log.debug("Lösche Mitarbeiter mit ID {}", id);
         mitarbeiterRepository.deleteById(id);
+        auditService.log("Mitarbeiter", id, "DELETE");
     }
 
     public List<Mitarbeiter> findOhneTeam() {

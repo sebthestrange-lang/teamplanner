@@ -40,6 +40,17 @@
                          th:errors="*{datum}"></div>
                 </div>
 
+                <div class="mb-3">
+                    <label for="teamId" class="form-label">Team <span class="text-muted">(optional)</span></label>
+                    <select id="teamId" name="teamId" class="form-select">
+                        <option value="">— kein Team —</option>
+                        <option th:each="t : ${teams}"
+                                th:value="${t.id}"
+                                th:text="${t.name}"
+                                th:selected="${ausgewaehlteTeamId != null and ausgewaehlteTeamId == t.id}"></option>
+                    </select>
+                </div>
+
                 <div class="mb-4">
                     <label for="notizen" class="form-label">Notizen</label>
                     <textarea id="notizen" th:field="*{notizen}"

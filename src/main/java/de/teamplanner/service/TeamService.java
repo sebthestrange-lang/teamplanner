@@ -21,6 +21,7 @@ public class TeamService {
 
     private final TeamRepository teamRepository;
     private final OrgContext orgContext;
+    private final AuditService auditService;
 
     public List<Team> alleTeams() {
         return teamRepository.findByOrganisationIdOrderByNameAsc(orgContext.getOrgId());
@@ -37,11 +38,14 @@ public class TeamService {
 
     @Transactional
     public Team speichern(Team team) {
-        if (team.getId() == null) {
+        boolean isNeu = team.getId() == null;
+        if (isNeu) {
             team.setOrganisation(orgContext.getOrganisation());
         }
         log.debug("Speichere Team: {}", team.getName());
-        return teamRepository.save(team);
+        Team gespeichert = teamRepository.save(team);
+        auditService.log("Team", gespeichert.getId(), isNeu ? "CREATE" : "UPDATE");
+        return gespeichert;
     }
 
     @Transactional
@@ -49,6 +53,7 @@ public class TeamService {
         findByIdOrThrow(id);
         log.debug("Lösche Team mit ID {}", id);
         teamRepository.deleteById(id);
+        auditService.log("Team", id, "DELETE");
     }
 
     public long anzahl() {

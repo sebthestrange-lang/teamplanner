@@ -114,6 +114,40 @@ public class BenutzerController {
         return "redirect:/benutzer";
     }
 
+    @GetMapping("/{id}/passwort")
+    public String passwortFormular(@PathVariable Long id, Model model) {
+        model.addAttribute("benutzer", benutzerService.findByIdOrThrow(id));
+        return "benutzer/passwort";
+    }
+
+    @PostMapping("/{id}/passwort")
+    public String passwortSetzen(@PathVariable Long id,
+                                 @RequestParam String neuesPasswort,
+                                 @RequestParam String passwortBestaetigung,
+                                 Model model,
+                                 RedirectAttributes redirectAttributes) {
+        de.teamplanner.model.Benutzer benutzer = benutzerService.findByIdOrThrow(id);
+        if (neuesPasswort == null || neuesPasswort.isBlank()) {
+            model.addAttribute("benutzer", benutzer);
+            model.addAttribute("fehler", "Passwort darf nicht leer sein.");
+            return "benutzer/passwort";
+        }
+        if (neuesPasswort.length() < 8) {
+            model.addAttribute("benutzer", benutzer);
+            model.addAttribute("fehler", "Passwort muss mindestens 8 Zeichen haben.");
+            return "benutzer/passwort";
+        }
+        if (!neuesPasswort.equals(passwortBestaetigung)) {
+            model.addAttribute("benutzer", benutzer);
+            model.addAttribute("fehler", "Passwörter stimmen nicht überein.");
+            return "benutzer/passwort";
+        }
+        benutzerService.passwortSetzen(id, neuesPasswort);
+        redirectAttributes.addFlashAttribute("erfolgsMeldung",
+                "Passwort für '" + benutzer.getBenutzername() + "' wurde geändert.");
+        return "redirect:/benutzer";
+    }
+
     @PostMapping("/{id}/loeschen")
     public String loeschen(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
@@ -124,4 +158,5 @@ public class BenutzerController {
         }
         return "redirect:/benutzer";
     }
+
 }

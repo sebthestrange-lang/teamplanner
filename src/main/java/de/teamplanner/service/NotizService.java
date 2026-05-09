@@ -18,6 +18,7 @@ public class NotizService {
 
     private final NotizRepository notizRepository;
     private final OrgContext orgContext;
+    private final AuditService auditService;
 
     public List<Notiz> findByTeam(Team team) {
         return notizRepository.findByTeamOrderByErstelltAmDesc(team);
@@ -29,20 +30,22 @@ public class NotizService {
 
     @Transactional
     public void hinzufuegenFuerTeam(String inhalt, Team team) {
-        notizRepository.save(Notiz.builder()
+        Notiz notiz = notizRepository.save(Notiz.builder()
                 .inhalt(inhalt)
                 .team(team)
                 .organisation(orgContext.getOrganisation())
                 .build());
+        auditService.log("Notiz", notiz.getId(), "CREATE");
     }
 
     @Transactional
     public void hinzufuegenFuerMitarbeiter(String inhalt, Mitarbeiter mitarbeiter) {
-        notizRepository.save(Notiz.builder()
+        Notiz notiz = notizRepository.save(Notiz.builder()
                 .inhalt(inhalt)
                 .mitarbeiter(mitarbeiter)
                 .organisation(orgContext.getOrganisation())
                 .build());
+        auditService.log("Notiz", notiz.getId(), "CREATE");
     }
 
     @Transactional
@@ -51,5 +54,6 @@ public class NotizService {
             throw new EntityNotFoundException("Notiz", id);
         }
         notizRepository.deleteById(id);
+        auditService.log("Notiz", id, "DELETE");
     }
 }

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      lang="de">
+<head><title>Audit-Log</title></head>
+<body>
+<main layout:fragment="content">
+
+    <div class="page-header mb-4">
+        <h1 class="page-title"><i class="bi bi-clock-history me-2"></i>Audit-Log</h1>
+        <p class="text-muted mb-0">Letzte 500 Einträge, neueste zuerst</p>
+    </div>
+
+    <div class="card card-custom">
+        <div th:if="${#lists.isEmpty(eintraege)}" class="empty-state py-5">
+            <i class="bi bi-clock-history text-muted" style="font-size:2.5rem"></i>
+            <p class="text-muted mt-2 mb-0">Keine Einträge vorhanden</p>
+        </div>
+        <div th:unless="${#lists.isEmpty(eintraege)}" class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Zeitpunkt</th>
+                        <th>Benutzer</th>
+                        <th>Aktion</th>
+                        <th>Entität</th>
+                        <th>ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="e : ${eintraege}">
+                        <td class="text-nowrap text-muted small"
+                            th:text="${#temporals.format(e.zeitpunkt, 'dd.MM.yyyy HH:mm')}"></td>
+                        <td th:text="${e.benutzername}"></td>
+                        <td>
+                            <span th:switch="${e.aktion}">
+                                <span th:case="'CREATE'" class="badge bg-success">Erstellt</span>
+                                <span th:case="'UPDATE'" class="badge bg-primary">Geändert</span>
+                                <span th:case="'DELETE'" class="badge bg-danger">Gelöscht</span>
+                                <span th:case="'PASSWORT_RESET'" class="badge bg-warning text-dark">Passwort</span>
+                                <span th:case="*" class="badge bg-secondary" th:text="${e.aktion}"></span>
+                            </span>
+                        </td>
+                        <td th:text="${e.entityType}"></td>
+                        <td class="text-muted" th:text="${e.entityId ?: '—'}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>
