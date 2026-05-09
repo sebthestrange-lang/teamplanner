@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout}"
+      lang="de">
+<head><title>Benutzerverwaltung</title></head>
+<body>
+<main layout:fragment="content">
+
+    <div class="page-header mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">Benutzerverwaltung</h1>
+            <p class="text-muted mb-0" th:text="${#lists.size(benutzer)} + ' Benutzer'"></p>
+        </div>
+        <a th:href="@{/benutzer/neu}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Neuer Benutzer
+        </a>
+    </div>
+
+    <div th:if="${#lists.isEmpty(benutzer)}" class="empty-state card-custom">
+        <i class="bi bi-people text-muted" style="font-size:3rem"></i>
+        <h5 class="mt-3 text-muted">Keine Benutzer vorhanden</h5>
+        <a th:href="@{/benutzer/neu}" class="btn btn-primary mt-2">Benutzer anlegen</a>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(benutzer)}" class="card card-custom">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Anzeigename</th>
+                        <th>Benutzername</th>
+                        <th>Rolle</th>
+                        <th>Status</th>
+                        <th class="text-end">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="b : ${benutzer}">
+                        <td th:text="${b.anzeigename}"></td>
+                        <td class="text-muted" th:text="${b.benutzername}"></td>
+                        <td>
+                            <span th:switch="${b.rolle.name()}">
+                                <span th:case="'ADMIN'" class="badge bg-danger">Admin</span>
+                                <span th:case="'MANAGER'" class="badge bg-primary">Manager</span>
+                                <span th:case="'LESER'" class="badge bg-secondary">Leser</span>
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${b.aktiv}" class="badge bg-success-subtle text-success">Aktiv</span>
+                            <span th:unless="${b.aktiv}" class="badge bg-danger-subtle text-danger">Inaktiv</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a th:href="@{/benutzer/{id}/bearbeiten(id=${b.id})}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger"
+                                        th:disabled="${b.benutzername == #authentication.name}"
+                                        th:title="${b.benutzername == #authentication.name} ? 'Eigener Account kann nicht gelöscht werden' : 'Löschen'"
+                                        th:onclick="'loeschenBestaetigen(\'/benutzer/' + ${b.id} + '/loeschen\')'">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

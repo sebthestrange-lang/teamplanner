@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      lang="de">
+<head><title th:text="${aktion}">Benutzer</title></head>
+<body>
+<main layout:fragment="content">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/benutzer}">Benutzerverwaltung</a></li>
+            <li class="breadcrumb-item active" th:text="${aktion}"></li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card card-custom">
+                <div class="card-header-custom">
+                    <h5 class="mb-0" th:text="${aktion}"></h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="${benutzerForm.id != null} ? @{/benutzer/{id}(id=${benutzerForm.id})} : @{/benutzer}"
+                          th:object="${benutzerForm}" method="post">
+
+                        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger py-2 small mb-3">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            <span th:each="err : ${#fields.globalErrors()}" th:text="${err}"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="anzeigename" class="form-label">Anzeigename <span class="text-danger">*</span></label>
+                            <input type="text" id="anzeigename" th:field="*{anzeigename}"
+                                   th:class="'form-control' + (${#fields.hasErrors('anzeigename')} ? ' is-invalid' : '')"
+                                   placeholder="Max Mustermann">
+                            <div th:if="${#fields.hasErrors('anzeigename')}" class="invalid-feedback"
+                                 th:errors="*{anzeigename}"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="benutzername" class="form-label">Benutzername <span class="text-danger">*</span></label>
+                            <input type="text" id="benutzername" th:field="*{benutzername}"
+                                   th:class="'form-control' + (${#fields.hasErrors('benutzername')} ? ' is-invalid' : '')"
+                                   th:readonly="${!istNeu}"
+                                   placeholder="maxmustermann">
+                            <div th:if="${#fields.hasErrors('benutzername')}" class="invalid-feedback"
+                                 th:errors="*{benutzername}"></div>
+                            <div th:unless="${istNeu}" class="form-text">Benutzername kann nicht geändert werden.</div>
+                        </div>
+
+                        <div class="mb-3" th:if="${istNeu}">
+                            <label for="organisationId" class="form-label">Organisation <span class="text-danger">*</span></label>
+                            <select id="organisationId" th:field="*{organisationId}" class="form-select">
+                                <option value="">Bitte wählen...</option>
+                                <option th:each="org : ${organisationen}"
+                                        th:value="${org.id}"
+                                        th:text="${org.name}"></option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="rolle" class="form-label">Rolle <span class="text-danger">*</span></label>
+                            <select id="rolle" th:field="*{rolle}"
+                                    th:class="'form-select' + (${#fields.hasErrors('rolle')} ? ' is-invalid' : '')">
+                                <option value="">Bitte wählen...</option>
+                                <option th:each="r : ${rollen}" th:value="${r}" th:text="${r}"></option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('rolle')}" class="invalid-feedback"
+                                 th:errors="*{rolle}"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="passwort" class="form-label">
+                                Passwort <span th:if="${istNeu}" class="text-danger">*</span>
+                            </label>
+                            <input type="password" id="passwort" th:field="*{passwort}"
+                                   th:class="'form-control' + (${#fields.hasErrors('passwort')} ? ' is-invalid' : '')"
+                                   placeholder="••••••••" autocomplete="new-password">
+                            <div th:if="${#fields.hasErrors('passwort')}" class="invalid-feedback"
+                                 th:errors="*{passwort}"></div>
+                            <div th:unless="${istNeu}" class="form-text">Leer lassen, um das Passwort beizubehalten.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="passwortBestaetigung" class="form-label">Passwort bestätigen</label>
+                            <input type="password" id="passwortBestaetigung" th:field="*{passwortBestaetigung}"
+                                   th:class="'form-control' + (${#fields.hasErrors('passwortBestaetigung')} ? ' is-invalid' : '')"
+                                   placeholder="••••••••" autocomplete="new-password">
+                            <div th:if="${#fields.hasErrors('passwortBestaetigung')}" class="invalid-feedback"
+                                 th:errors="*{passwortBestaetigung}"></div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="aktiv" th:field="*{aktiv}">
+                                <label class="form-check-label" for="aktiv">Benutzer ist aktiv</label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>Speichern
+                            </button>
+                            <a th:href="@{/benutzer}" class="btn btn-light">Abbrechen</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

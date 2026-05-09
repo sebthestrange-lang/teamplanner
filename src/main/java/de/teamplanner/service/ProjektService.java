@@ -1,5 +1,6 @@
 package de.teamplanner.service;
 
+import de.teamplanner.config.OrgContext;
 import de.teamplanner.dto.ProjektFilterDTO;
 import de.teamplanner.exception.EntityNotFoundException;
 import de.teamplanner.model.Aufgabe;
@@ -13,6 +14,7 @@ import de.teamplanner.specification.ProjektSpecification;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,64 +33,50 @@ public class ProjektService {
 
     private final ProjektRepository projektRepository;
     private final AufgabeRepository aufgabeRepository;
+    private final OrgContext orgContext;
 
-    /**
-     * Alle Projekte.
-     */
+    private Specification<Projekt> byOrg() {
+        Long orgId = orgContext.getOrgId();
+        return (root, query, cb) -> cb.equal(root.get("organisation").get("id"), orgId);
+    }
+
     public List<Projekt> alleProjekte() {
-        return projektRepository.findAll();
+        return projektRepository.findAll(byOrg());
     }
 
-    /**
-     * Projekte gefiltert.
-     */
     public List<Projekt> mitFilter(ProjektFilterDTO filter) {
-        return projektRepository.findAll(ProjektSpecification.withFilter(filter));
+        return projektRepository.findAll(byOrg().and(ProjektSpecification.withFilter(filter)));
     }
 
-    /**
-     * Alle Projekte eines Teams.
-     */
     public List<Projekt> findByTeam(Team team) {
         return projektRepository.findByTeam(team);
     }
 
-    /**
-     * Projekt anhand ID suchen.
-     */
     public Optional<Projekt> findById(Long id) {
-        return projektRepository.findById(id);
+        return projektRepository.findByIdAndOrganisationId(id, orgContext.getOrgId());
     }
 
-    /**
-     * Projekt anhand ID oder Exception.
-     */
     public Projekt findByIdOrThrow(Long id) {
-        return projektRepository.findById(id)
+        return projektRepository.findByIdAndOrganisationId(id, orgContext.getOrgId())
                 .orElseThrow(() -> new EntityNotFoundException("Projekt", id));
     }
 
-    /**
-     * Projekt anlegen oder aktualisieren.
-     */
     @Transactional
     public Projekt speichern(Projekt projekt) {
+        if (projekt.getId() == null) {
+            projekt.setOrganisation(orgContext.getOrganisation());
+        }
         log.debug("Speichere Projekt: {}", projekt.getName());
         return projektRepository.save(projekt);
     }
 
-    /**
-     * Projekt löschen.
-     */
     @Transactional
     public void loeschen(Long id) {
+        findByIdOrThrow(id);
         log.debug("Lösche Projekt mit ID {}", id);
         projektRepository.deleteById(id);
     }
 
-    /**
-     * Alle Mitarbeiter ermitteln, die Aufgaben in diesem Projekt haben.
-     */
     public List<Mitarbeiter> getBeteiligteMitarbeiter(Long projektId) {
         return aufgabeRepository.findByProjektId(projektId)
                 .stream()
@@ -98,13 +86,9 @@ public class ProjektService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Aufgaben-Statistik je Mitarbeiter: offene und erledigte Aufgaben.
-     */
     public Map<Long, Map<String, Long>> getAufgabenStatistikJeMitarbeiter(Long projektId) {
         List<Aufgabe> aufgaben = aufgabeRepository.findByProjektId(projektId);
         Map<Long, Map<String, Long>> statistik = new HashMap<>();
-
         for (Aufgabe aufgabe : aufgaben) {
             if (aufgabe.getMitarbeiter() == null) continue;
             Long mitarbeiterId = aufgabe.getMitarbeiter().getId();
@@ -119,6 +103,6 @@ public class ProjektService {
     }
 
     public long anzahl() {
-        return projektRepository.count();
+        return projektRepository.countByStatus(de.teamplanner.model.enums.ProjektStatus.AKTIV);
     }
 }

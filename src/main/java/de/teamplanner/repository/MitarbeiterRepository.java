@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MitarbeiterRepository extends JpaRepository<Mitarbeiter, Long>,
@@ -19,4 +20,12 @@ public interface MitarbeiterRepository extends JpaRepository<Mitarbeiter, Long>,
     long countByTeam(Team team);
 
     List<Mitarbeiter> findByTeamIsNullOrTeamNotOrderByNachnameAsc(Team team);
+
+    List<Mitarbeiter> findByTeamIsNullOrderByNachnameAsc();
+
+    List<Mitarbeiter> findByOrganisationIdAndTeamIsNullOrderByNachnameAsc(Long organisationId);
+
+    long countByOrganisationId(Long organisationId);
+
+    Optional<Mitarbeiter> findByIdAndOrganisationId(Long id, Long organisationId);
 }

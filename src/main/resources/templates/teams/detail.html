@@ -138,15 +138,10 @@
                           method="post" class="d-flex gap-2">
                         <select name="mitarbeiterId" class="form-select form-select-sm">
                             <option value="" disabled selected>Mitarbeiter auswählen…</option>
-                            <optgroup th:each="ma : ${verfuegbareMitarbeiter}"
-                                      th:if="${ma.team == null}"
-                                      label="Ohne Team">
-                            </optgroup>
-                            <th:block th:each="ma : ${verfuegbareMitarbeiter}">
-                                <option th:value="${ma.id}"
-                                        th:text="${ma.vollstaendigerName} + (${ma.team != null} ? ' (aktuell: ' + ${ma.team.name} + ')' : ' (kein Team)')">
-                                </option>
-                            </th:block>
+                            <option th:each="ma : ${verfuegbareMitarbeiter}"
+                                    th:value="${ma.id}"
+                                    th:text="${ma.vollstaendigerName} + (${ma.rolle != null} ? ' – ' + ${ma.rolle} : '')">
+                            </option>
                         </select>
                         <button type="submit" class="btn btn-sm btn-primary text-nowrap">
                             <i class="bi bi-person-check-fill me-1"></i>Zuweisen
@@ -157,7 +152,7 @@
                 <div th:if="${#lists.isEmpty(verfuegbareMitarbeiter)}"
                      class="card-footer-custom text-muted small text-center py-2">
                     <i class="bi bi-check-circle me-1 text-success"></i>
-                    Alle Mitarbeiter sind diesem Team zugewiesen
+                    Keine Mitarbeiter ohne Team verfügbar
                 </div>
             </div>
         </div>
@@ -195,6 +190,18 @@
         </div>
 
     </div>
+
+    <!-- Notizen -->
+    <div class="row g-4 mt-0">
+        <div class="col-12">
+            <th:block th:replace="~{fragments/notizen :: notizKarte(
+                ${notizen},
+                '/teams/' + ${team.id} + '/notizen',
+                '/teams/' + ${team.id} + '/notizen/'
+            )}"></th:block>
+        </div>
+    </div>
+
 </main>
 </body>
 </html>

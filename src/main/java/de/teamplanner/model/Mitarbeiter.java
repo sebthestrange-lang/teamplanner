@@ -44,6 +44,10 @@ public class Mitarbeiter {
     @Column(name = "telefon")
     private String telefon;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "organisation_id", nullable = false)
+    private Organisation organisation;
+
     @CreationTimestamp
     @Column(name = "erstellt_am", nullable = false, updatable = false)
     private LocalDateTime erstelltAm;

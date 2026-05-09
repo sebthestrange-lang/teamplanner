@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      lang="de">
+<head><title th:text="${aktion}">Meeting</title></head>
+<body>
+<main layout:fragment="content">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/meetings}">Meetings</a></li>
+            <li class="breadcrumb-item active" th:text="${aktion}"></li>
+        </ol>
+    </nav>
+
+    <div class="page-header mb-4">
+        <h1 class="page-title" th:text="${aktion}"></h1>
+    </div>
+
+    <div class="card card-custom" style="max-width:680px">
+        <div class="card-body p-4">
+            <form th:action="${meeting.id == null ? '/meetings' : '/meetings/' + meeting.id}"
+                  th:object="${meeting}" method="post">
+
+                <div class="mb-3">
+                    <label for="titel" class="form-label">Titel <span class="text-danger">*</span></label>
+                    <input type="text" id="titel" th:field="*{titel}"
+                           th:class="'form-control' + (${#fields.hasErrors('titel')} ? ' is-invalid' : '')"
+                           placeholder="z.B. Sprint-Review Q2">
+                    <div th:if="${#fields.hasErrors('titel')}" class="invalid-feedback"
+                         th:errors="*{titel}"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="datum" class="form-label">Datum <span class="text-danger">*</span></label>
+                    <input type="date" id="datum" th:field="*{datum}"
+                           th:class="'form-control' + (${#fields.hasErrors('datum')} ? ' is-invalid' : '')">
+                    <div th:if="${#fields.hasErrors('datum')}" class="invalid-feedback"
+                         th:errors="*{datum}"></div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="notizen" class="form-label">Notizen</label>
+                    <textarea id="notizen" th:field="*{notizen}"
+                              class="form-control" rows="10"
+                              placeholder="Agenda, Beschlüsse, Aufgaben…"></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>Speichern
+                    </button>
+                    <a th:href="@{/meetings}" class="btn btn-light">Abbrechen</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

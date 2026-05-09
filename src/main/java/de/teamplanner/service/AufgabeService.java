@@ -1,5 +1,6 @@
 package de.teamplanner.service;
 
+import de.teamplanner.config.OrgContext;
 import de.teamplanner.dto.AufgabeFilterDTO;
 import de.teamplanner.dto.TeamAuslastungDTO;
 import de.teamplanner.exception.EntityNotFoundException;
@@ -14,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,71 +31,53 @@ public class AufgabeService {
     private static final Logger log = LoggerFactory.getLogger(AufgabeService.class);
 
     private final AufgabeRepository aufgabeRepository;
+    private final OrgContext orgContext;
 
-    /**
-     * Alle Aufgaben.
-     */
+    private Specification<Aufgabe> byOrg() {
+        Long orgId = orgContext.getOrgId();
+        return (root, query, cb) -> cb.equal(root.get("organisation").get("id"), orgId);
+    }
+
     public List<Aufgabe> alleAufgaben() {
-        return aufgabeRepository.findAll();
+        return aufgabeRepository.findAll(byOrg());
     }
 
-    /**
-     * Aufgaben gefiltert.
-     */
     public List<Aufgabe> mitFilter(AufgabeFilterDTO filter) {
-        return aufgabeRepository.findAll(AufgabeSpecification.withFilter(filter));
+        return aufgabeRepository.findAll(byOrg().and(AufgabeSpecification.withFilter(filter)));
     }
 
-    /**
-     * Aufgaben eines Projekts.
-     */
     public List<Aufgabe> findByProjektId(Long projektId) {
         return aufgabeRepository.findByProjektId(projektId);
     }
 
-    /**
-     * Aufgaben eines Mitarbeiters.
-     */
     public List<Aufgabe> findByMitarbeiter(Mitarbeiter mitarbeiter) {
         return aufgabeRepository.findByMitarbeiter(mitarbeiter);
     }
 
-    /**
-     * Aufgabe anhand ID suchen.
-     */
     public Optional<Aufgabe> findById(Long id) {
-        return aufgabeRepository.findById(id);
+        return aufgabeRepository.findByIdAndOrganisationId(id, orgContext.getOrgId());
     }
 
-    /**
-     * Aufgabe anhand ID oder Exception.
-     */
     public Aufgabe findByIdOrThrow(Long id) {
-        return aufgabeRepository.findById(id)
+        return aufgabeRepository.findByIdAndOrganisationId(id, orgContext.getOrgId())
                 .orElseThrow(() -> new EntityNotFoundException("Aufgabe", id));
     }
 
-    /**
-     * Aufgabe anlegen oder aktualisieren.
-     */
     @Transactional
     public Aufgabe speichern(Aufgabe aufgabe) {
+        if (aufgabe.getId() == null) {
+            aufgabe.setOrganisation(orgContext.getOrganisation());
+        }
         log.debug("Speichere Aufgabe: {}", aufgabe.getTitel());
         return aufgabeRepository.save(aufgabe);
     }
 
-    /**
-     * Status einer Aufgabe per ID ändern.
-     */
     @Transactional
     public Aufgabe statusAendern(Long id, AufgabenStatus neuerStatus) {
         Aufgabe aufgabe = findByIdOrThrow(id);
         return statusAendern(aufgabe, neuerStatus);
     }
 
-    /**
-     * Status auf einem bereits geladenen Aufgabe-Objekt setzen.
-     */
     @Transactional
     public Aufgabe statusAendern(Aufgabe aufgabe, AufgabenStatus neuerStatus) {
         aufgabe.setStatus(neuerStatus);
@@ -105,11 +89,9 @@ public class AufgabeService {
         return aufgabeRepository.save(aufgabe);
     }
 
-    /**
-     * Aufgabe löschen.
-     */
     @Transactional
     public void loeschen(Long id) {
+        findByIdOrThrow(id);
         log.debug("Lösche Aufgabe mit ID {}", id);
         aufgabeRepository.deleteById(id);
     }
@@ -121,30 +103,33 @@ public class AufgabeService {
     }
 
     public List<Aufgabe> heuteFaellig() {
-        return aufgabeRepository.findByFaelligAm(LocalDate.now());
+        Specification<Aufgabe> spec = byOrg().and(
+                (root, query, cb) -> cb.equal(root.get("faelligAm"), LocalDate.now()));
+        return aufgabeRepository.findAll(spec);
     }
 
     public List<Aufgabe> letzteAktivitaeten(int anzahl) {
-        return aufgabeRepository.findLatest(
-                PageRequest.of(0, anzahl, Sort.by(Sort.Direction.DESC, "erstelltAm")));
+        return aufgabeRepository.findAll(byOrg(),
+                PageRequest.of(0, anzahl, Sort.by(Sort.Direction.DESC, "erstelltAm"))).getContent();
     }
 
     public long anzahlOffen() {
-        return aufgabeRepository.countByStatus(AufgabenStatus.OFFEN)
-             + aufgabeRepository.countByStatus(AufgabenStatus.IN_BEARBEITUNG);
+        Long orgId = orgContext.getOrgId();
+        return aufgabeRepository.countByOrganisationIdAndStatus(orgId, AufgabenStatus.OFFEN)
+             + aufgabeRepository.countByOrganisationIdAndStatus(orgId, AufgabenStatus.IN_BEARBEITUNG);
     }
 
     public long anzahlUeberfaellig() {
-        return aufgabeRepository.countByFaelligAmBeforeAndStatusNot(
-                LocalDate.now(), AufgabenStatus.ABGESCHLOSSEN);
+        return aufgabeRepository.countByOrganisationIdAndUeberfaellig(
+                orgContext.getOrgId(), LocalDate.now(), AufgabenStatus.ABGESCHLOSSEN);
     }
 
     public long anzahlNachStatus(AufgabenStatus status) {
-        return aufgabeRepository.countByStatus(status);
+        return aufgabeRepository.countByOrganisationIdAndStatus(orgContext.getOrgId(), status);
     }
 
     public TeamAuslastungDTO auslastungFuerTeam(Team team) {
-        long offen        = aufgabeRepository.countByTeamAndStatus(team, AufgabenStatus.OFFEN);
+        long offen         = aufgabeRepository.countByTeamAndStatus(team, AufgabenStatus.OFFEN);
         long inBearbeitung = aufgabeRepository.countByTeamAndStatus(team, AufgabenStatus.IN_BEARBEITUNG);
         long abgeschlossen = aufgabeRepository.countByTeamAndStatus(team, AufgabenStatus.ABGESCHLOSSEN);
         return new TeamAuslastungDTO(offen, inBearbeitung, abgeschlossen);

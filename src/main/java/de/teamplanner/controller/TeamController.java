@@ -4,6 +4,7 @@ import de.teamplanner.dto.TeamAuslastungDTO;
 import de.teamplanner.model.Team;
 import de.teamplanner.service.AufgabeService;
 import de.teamplanner.service.MitarbeiterService;
+import de.teamplanner.service.NotizService;
 import de.teamplanner.service.ProjektService;
 import de.teamplanner.service.TeamService;
 import jakarta.validation.Valid;
@@ -28,16 +29,20 @@ public class TeamController {
     private final MitarbeiterService mitarbeiterService;
     private final ProjektService projektService;
     private final AufgabeService aufgabeService;
+    private final NotizService notizService;
 
     @GetMapping
     public String liste(Model model) {
         List<Team> teams = teamService.alleTeams();
         Map<Long, TeamAuslastungDTO> auslastungen = new LinkedHashMap<>();
+        Map<Long, List<de.teamplanner.model.Mitarbeiter>> mitarbeiterByTeam = new LinkedHashMap<>();
         for (Team t : teams) {
             auslastungen.put(t.getId(), aufgabeService.auslastungFuerTeam(t));
+            mitarbeiterByTeam.put(t.getId(), mitarbeiterService.findByTeam(t));
         }
         model.addAttribute("teams", teams);
         model.addAttribute("auslastungen", auslastungen);
+        model.addAttribute("mitarbeiterByTeam", mitarbeiterByTeam);
         return "teams/liste";
     }
 
@@ -46,10 +51,30 @@ public class TeamController {
         Team team = teamService.findByIdOrThrow(id);
         model.addAttribute("team", team);
         model.addAttribute("mitarbeiter", mitarbeiterService.findByTeam(team));
-        model.addAttribute("verfuegbareMitarbeiter", mitarbeiterService.findNichtImTeam(team));
+        model.addAttribute("verfuegbareMitarbeiter", mitarbeiterService.findOhneTeam());
         model.addAttribute("projekte", projektService.findByTeam(team));
         model.addAttribute("auslastung", aufgabeService.auslastungFuerTeam(team));
+        model.addAttribute("notizen", notizService.findByTeam(team));
         return "teams/detail";
+    }
+
+    @PostMapping("/{id}/notizen")
+    public String notizHinzufuegen(@PathVariable Long id,
+                                   @RequestParam String inhalt,
+                                   RedirectAttributes redirectAttributes) {
+        Team team = teamService.findByIdOrThrow(id);
+        if (inhalt != null && !inhalt.isBlank()) {
+            notizService.hinzufuegenFuerTeam(inhalt.trim(), team);
+        }
+        return "redirect:/teams/" + id;
+    }
+
+    @PostMapping("/{id}/notizen/{notizId}/loeschen")
+    public String notizLoeschen(@PathVariable Long id,
+                                @PathVariable Long notizId,
+                                RedirectAttributes redirectAttributes) {
+        notizService.loeschen(notizId);
+        return "redirect:/teams/" + id;
     }
 
     @PostMapping("/{id}/mitarbeiter/zuweisen")

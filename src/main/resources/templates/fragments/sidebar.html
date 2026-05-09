@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="de">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="de">
 <body>
 
 <nav th:fragment="sidebar"
@@ -72,6 +74,35 @@
             </a>
         </li>
 
+        <li class="sidebar-section-label" sec:authorize="hasRole('ADMIN')">Administration</li>
+
+        <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/organisationen}"
+               th:classappend="${currentUri?.startsWith('/organisationen')} ? 'active' : ''"
+               class="nav-link sidebar-link">
+                <i class="bi bi-building"></i>
+                <span>Organisationen</span>
+            </a>
+        </li>
+
+        <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/benutzer}"
+               th:classappend="${currentUri?.startsWith('/benutzer')} ? 'active' : ''"
+               class="nav-link sidebar-link">
+                <i class="bi bi-shield-lock-fill"></i>
+                <span>Benutzer</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a th:href="@{/meetings}"
+               th:classappend="${currentUri?.startsWith('/meetings')} ? 'active' : ''"
+               class="nav-link sidebar-link">
+                <i class="bi bi-camera-video"></i>
+                <span>Meetings</span>
+            </a>
+        </li>
+
         <li class="sidebar-section-label">Aufgaben</li>
 
         <li class="nav-item">
@@ -99,7 +130,18 @@
 
     <!-- Footer -->
     <div class="sidebar-footer">
-        <small class="text-muted">v1.0.0</small>
+        <div class="d-flex align-items-center gap-2 overflow-hidden mb-2">
+            <i class="bi bi-person-circle flex-shrink-0"></i>
+            <div class="overflow-hidden">
+                <div class="small fw-semibold text-truncate" sec:authentication="name">Benutzer</div>
+                <div class="text-muted" style="font-size:.7rem">v1.0.0</div>
+            </div>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-sm btn-outline-secondary w-100">
+                <i class="bi bi-box-arrow-right me-1"></i>Abmelden
+            </button>
+        </form>
     </div>
 </nav>
 

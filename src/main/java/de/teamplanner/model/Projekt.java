@@ -28,6 +28,10 @@ public class Projekt {
     @JoinColumn(name = "team_id")
     private Team team;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "organisation_id", nullable = false)
+    private Organisation organisation;
+
     @NotBlank(message = "Name darf nicht leer sein")
     @Column(nullable = false)
     private String name;

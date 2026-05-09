@@ -1,5 +1,6 @@
 package de.teamplanner.service;
 
+import de.teamplanner.config.OrgContext;
 import de.teamplanner.dto.MitarbeiterFilterDTO;
 import de.teamplanner.exception.EntityNotFoundException;
 import de.teamplanner.model.Mitarbeiter;
@@ -9,6 +10,7 @@ import de.teamplanner.specification.MitarbeiterSpecification;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,71 +24,54 @@ public class MitarbeiterService {
     private static final Logger log = LoggerFactory.getLogger(MitarbeiterService.class);
 
     private final MitarbeiterRepository mitarbeiterRepository;
+    private final OrgContext orgContext;
 
-    /**
-     * Alle Mitarbeiter.
-     */
+    private Specification<Mitarbeiter> byOrg() {
+        Long orgId = orgContext.getOrgId();
+        return (root, query, cb) -> cb.equal(root.get("organisation").get("id"), orgId);
+    }
+
     public List<Mitarbeiter> alleMitarbeiter() {
-        return mitarbeiterRepository.findAll();
+        return mitarbeiterRepository.findAll(byOrg());
     }
 
-    /**
-     * Mitarbeiter gefiltert.
-     */
     public List<Mitarbeiter> mitFilter(MitarbeiterFilterDTO filter) {
-        return mitarbeiterRepository.findAll(MitarbeiterSpecification.withFilter(filter));
+        return mitarbeiterRepository.findAll(byOrg().and(MitarbeiterSpecification.withFilter(filter)));
     }
 
-    /**
-     * Alle Mitarbeiter eines Teams.
-     */
     public List<Mitarbeiter> findByTeam(Team team) {
         return mitarbeiterRepository.findByTeamOrderByNachnameAsc(team);
     }
 
-    /**
-     * Mitarbeiter anhand ID suchen.
-     */
     public Optional<Mitarbeiter> findById(Long id) {
-        return mitarbeiterRepository.findById(id);
+        return mitarbeiterRepository.findByIdAndOrganisationId(id, orgContext.getOrgId());
     }
 
-    /**
-     * Mitarbeiter anhand ID oder Exception.
-     */
     public Mitarbeiter findByIdOrThrow(Long id) {
-        return mitarbeiterRepository.findById(id)
+        return mitarbeiterRepository.findByIdAndOrganisationId(id, orgContext.getOrgId())
                 .orElseThrow(() -> new EntityNotFoundException("Mitarbeiter", id));
     }
 
-    /**
-     * Mitarbeiter anlegen oder aktualisieren.
-     */
     @Transactional
     public Mitarbeiter speichern(Mitarbeiter mitarbeiter) {
+        if (mitarbeiter.getId() == null) {
+            mitarbeiter.setOrganisation(orgContext.getOrganisation());
+        }
         log.debug("Speichere Mitarbeiter: {} {}", mitarbeiter.getVorname(), mitarbeiter.getNachname());
         return mitarbeiterRepository.save(mitarbeiter);
     }
 
-    /**
-     * Mitarbeiter löschen.
-     */
     @Transactional
     public void loeschen(Long id) {
+        findByIdOrThrow(id);
         log.debug("Lösche Mitarbeiter mit ID {}", id);
         mitarbeiterRepository.deleteById(id);
     }
 
-    /**
-     * Alle Mitarbeiter, die noch nicht in diesem Team sind (für Zuweisung).
-     */
-    public List<Mitarbeiter> findNichtImTeam(Team team) {
-        return mitarbeiterRepository.findByTeamIsNullOrTeamNotOrderByNachnameAsc(team);
+    public List<Mitarbeiter> findOhneTeam() {
+        return mitarbeiterRepository.findByOrganisationIdAndTeamIsNullOrderByNachnameAsc(orgContext.getOrgId());
     }
 
-    /**
-     * Mitarbeiter einem Team zuweisen.
-     */
     @Transactional
     public void zuTeamZuweisen(Long mitarbeiterId, Team team) {
         Mitarbeiter mitarbeiter = findByIdOrThrow(mitarbeiterId);
@@ -95,9 +80,6 @@ public class MitarbeiterService {
         log.debug("Mitarbeiter {} dem Team {} zugewiesen", mitarbeiter.getVollstaendigerName(), team.getName());
     }
 
-    /**
-     * Mitarbeiter aus seinem Team entfernen.
-     */
     @Transactional
     public void ausTeamEntfernen(Long mitarbeiterId) {
         Mitarbeiter mitarbeiter = findByIdOrThrow(mitarbeiterId);
@@ -107,6 +89,6 @@ public class MitarbeiterService {
     }
 
     public long anzahl() {
-        return mitarbeiterRepository.count();
+        return mitarbeiterRepository.countByOrganisationId(orgContext.getOrgId());
     }
 }

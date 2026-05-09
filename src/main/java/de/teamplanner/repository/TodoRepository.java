@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TodoRepository extends JpaRepository<Todo, Long>,
@@ -28,4 +29,10 @@ public interface TodoRepository extends JpaRepository<Todo, Long>,
     long countByFaelligAmBeforeAndErledigtFalse(LocalDate datum);
 
     long countByFaelligAmAndErledigtFalse(LocalDate datum);
+
+    long countByOrganisationIdAndErledigtFalse(Long organisationId);
+
+    long countByOrganisationIdAndFaelligAmBeforeAndErledigtFalse(Long organisationId, LocalDate datum);
+
+    Optional<Todo> findByIdAndOrganisationId(Long id, Long organisationId);
 }

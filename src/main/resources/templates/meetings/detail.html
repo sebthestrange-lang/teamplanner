@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout}"
+      lang="de">
+<head><title th:text="${meeting.titel}">Meeting</title></head>
+<body>
+<main layout:fragment="content">
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/meetings}">Meetings</a></li>
+            <li class="breadcrumb-item active" th:text="${meeting.titel}"></li>
+        </ol>
+    </nav>
+
+    <div class="page-header mb-4 d-flex justify-content-between align-items-start">
+        <div>
+            <h1 class="page-title mb-1" th:text="${meeting.titel}"></h1>
+            <span class="text-muted">
+                <i class="bi bi-calendar3 me-1"></i>
+                <span th:text="${#temporals.format(meeting.datum, 'dd.MM.yyyy')}"></span>
+            </span>
+        </div>
+        <div sec:authorize="hasAnyRole('ADMIN','MANAGER')" class="d-flex gap-2">
+            <a th:href="@{/meetings/{id}/bearbeiten(id=${meeting.id})}" class="btn btn-outline-primary">
+                <i class="bi bi-pencil me-1"></i>Bearbeiten
+            </a>
+            <button type="button" class="btn btn-outline-danger"
+                    th:onclick="'loeschenBestaetigen(\'/meetings/' + ${meeting.id} + '/loeschen\')'">
+                <i class="bi bi-trash me-1"></i>Löschen
+            </button>
+        </div>
+    </div>
+
+    <div class="card card-custom">
+        <div class="card-header-custom">
+            <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i>Notizen</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${meeting.notizen == null or meeting.notizen.isBlank()}"
+                 class="text-muted fst-italic">Keine Notizen vorhanden.</div>
+            <div th:unless="${meeting.notizen == null or meeting.notizen.isBlank()}"
+                 th:text="${meeting.notizen}"
+                 style="white-space: pre-wrap;"></div>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

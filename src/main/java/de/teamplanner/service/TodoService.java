@@ -1,5 +1,6 @@
 package de.teamplanner.service;
 
+import de.teamplanner.config.OrgContext;
 import de.teamplanner.dto.TodoFilterDTO;
 import de.teamplanner.exception.EntityNotFoundException;
 import de.teamplanner.model.Todo;
@@ -8,6 +9,7 @@ import de.teamplanner.specification.TodoSpecification;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,62 +25,52 @@ public class TodoService {
     private static final Logger log = LoggerFactory.getLogger(TodoService.class);
 
     private final TodoRepository todoRepository;
+    private final OrgContext orgContext;
 
-    /**
-     * Alle Todos.
-     */
+    private Specification<Todo> byOrg() {
+        Long orgId = orgContext.getOrgId();
+        return (root, query, cb) -> cb.equal(root.get("organisation").get("id"), orgId);
+    }
+
     public List<Todo> alle() {
-        return todoRepository.findAll();
+        return todoRepository.findAll(byOrg());
     }
 
-    /**
-     * Todos gefiltert.
-     */
     public List<Todo> mitFilter(TodoFilterDTO filter) {
-        return todoRepository.findAll(TodoSpecification.withFilter(filter));
+        return todoRepository.findAll(byOrg().and(TodoSpecification.withFilter(filter)));
     }
 
-    /**
-     * Alle offenen Todos, sortiert nach Fälligkeit.
-     */
     public List<Todo> alleOffen() {
-        return todoRepository.findByErledigtFalseOrderByFaelligAmAsc();
+        Specification<Todo> spec = byOrg().and(
+                (root, query, cb) -> cb.isFalse(root.get("erledigt")));
+        return todoRepository.findAll(spec,
+                org.springframework.data.domain.Sort.by("faelligAm").ascending()).stream().toList();
     }
 
-    /**
-     * Alle erledigten Todos.
-     */
     public List<Todo> alleErledigt() {
-        return todoRepository.findByErledigtTrue();
+        Specification<Todo> spec = byOrg().and(
+                (root, query, cb) -> cb.isTrue(root.get("erledigt")));
+        return todoRepository.findAll(spec);
     }
 
-    /**
-     * Todo anhand ID suchen.
-     */
     public Optional<Todo> findById(Long id) {
-        return todoRepository.findById(id);
+        return todoRepository.findByIdAndOrganisationId(id, orgContext.getOrgId());
     }
 
-    /**
-     * Todo anhand ID oder Exception.
-     */
     public Todo findByIdOrThrow(Long id) {
-        return todoRepository.findById(id)
+        return todoRepository.findByIdAndOrganisationId(id, orgContext.getOrgId())
                 .orElseThrow(() -> new EntityNotFoundException("Todo", id));
     }
 
-    /**
-     * Todo anlegen oder aktualisieren.
-     */
     @Transactional
     public Todo speichern(Todo todo) {
+        if (todo.getId() == null) {
+            todo.setOrganisation(orgContext.getOrganisation());
+        }
         log.debug("Speichere Todo: {}", todo.getTitel());
         return todoRepository.save(todo);
     }
 
-    /**
-     * Erledigungsstatus eines Todos umschalten.
-     */
     @Transactional
     public Todo erledigtToggle(Long id) {
         Todo todo = findByIdOrThrow(id);
@@ -87,11 +79,9 @@ public class TodoService {
         return todoRepository.save(todo);
     }
 
-    /**
-     * Todo löschen.
-     */
     @Transactional
     public void loeschen(Long id) {
+        findByIdOrThrow(id);
         log.debug("Lösche Todo mit ID {}", id);
         todoRepository.deleteById(id);
     }
@@ -103,15 +93,20 @@ public class TodoService {
     }
 
     public List<Todo> heuteFaellig() {
-        return todoRepository.findByFaelligAmAndErledigtFalse(LocalDate.now());
+        Specification<Todo> spec = byOrg().and(
+                (root, query, cb) -> cb.and(
+                        cb.equal(root.get("faelligAm"), LocalDate.now()),
+                        cb.isFalse(root.get("erledigt"))));
+        return todoRepository.findAll(spec);
     }
 
     public long anzahlOffen() {
-        return todoRepository.countByErledigtFalse();
+        return todoRepository.countByOrganisationIdAndErledigtFalse(orgContext.getOrgId());
     }
 
     public long anzahlUeberfaellig() {
-        return todoRepository.countByFaelligAmBeforeAndErledigtFalse(LocalDate.now());
+        return todoRepository.countByOrganisationIdAndFaelligAmBeforeAndErledigtFalse(
+                orgContext.getOrgId(), LocalDate.now());
     }
 
     public long anzahlHeuteFaellig() {

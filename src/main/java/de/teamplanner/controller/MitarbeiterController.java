@@ -4,6 +4,7 @@ import de.teamplanner.dto.MitarbeiterFilterDTO;
 import de.teamplanner.model.Mitarbeiter;
 import de.teamplanner.service.AufgabeService;
 import de.teamplanner.service.MitarbeiterService;
+import de.teamplanner.service.NotizService;
 import de.teamplanner.service.TeamService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class MitarbeiterController {
     private final MitarbeiterService mitarbeiterService;
     private final TeamService teamService;
     private final AufgabeService aufgabeService;
+    private final NotizService notizService;
 
     @GetMapping
     public String liste(@ModelAttribute MitarbeiterFilterDTO filter, Model model) {
@@ -35,7 +37,27 @@ public class MitarbeiterController {
         Mitarbeiter mitarbeiter = mitarbeiterService.findByIdOrThrow(id);
         model.addAttribute("mitarbeiter", mitarbeiter);
         model.addAttribute("aufgaben", aufgabeService.findByMitarbeiter(mitarbeiter));
+        model.addAttribute("notizen", notizService.findByMitarbeiter(mitarbeiter));
         return "mitarbeiter/detail";
+    }
+
+    @PostMapping("/{id}/notizen")
+    public String notizHinzufuegen(@PathVariable Long id,
+                                   @RequestParam String inhalt,
+                                   RedirectAttributes redirectAttributes) {
+        Mitarbeiter mitarbeiter = mitarbeiterService.findByIdOrThrow(id);
+        if (inhalt != null && !inhalt.isBlank()) {
+            notizService.hinzufuegenFuerMitarbeiter(inhalt.trim(), mitarbeiter);
+        }
+        return "redirect:/mitarbeiter/" + id;
+    }
+
+    @PostMapping("/{id}/notizen/{notizId}/loeschen")
+    public String notizLoeschen(@PathVariable Long id,
+                                @PathVariable Long notizId,
+                                RedirectAttributes redirectAttributes) {
+        notizService.loeschen(notizId);
+        return "redirect:/mitarbeiter/" + id;
     }
 
     @GetMapping("/neu")

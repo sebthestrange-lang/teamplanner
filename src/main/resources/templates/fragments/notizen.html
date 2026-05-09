@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="de">
+<body>
+
+<!--
+  Notizen-Karte als wiederverwendbares Fragment.
+  Parameter:
+    notizen   – List<Notiz>
+    addUrl    – URL für POST (Notiz hinzufügen)
+    deleteUrl – Thymeleaf-Präfix für DELETE, z.B. '/teams/1/notizen/' → wird mit ${notiz.id}+'/loeschen' kombiniert
+-->
+<div th:fragment="notizKarte(notizen, addUrl, deleteUrlPrefix)"
+     class="card card-custom">
+    <div class="card-header-custom d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-sticky me-2"></i>Notizen
+            <span th:if="${!#lists.isEmpty(notizen)}"
+                  class="badge rounded-pill bg-primary-soft text-primary ms-1"
+                  th:text="${#lists.size(notizen)}"></span>
+        </h5>
+    </div>
+
+    <!-- Liste -->
+    <div th:if="${#lists.isEmpty(notizen)}" class="empty-state py-3">
+        <p class="text-muted mb-0 small">Noch keine Notizen vorhanden</p>
+    </div>
+
+    <ul th:unless="${#lists.isEmpty(notizen)}" class="list-group list-group-flush">
+        <li th:each="notiz : ${notizen}" class="list-group-item px-3 py-2">
+            <div class="d-flex gap-2">
+                <div class="flex-grow-1">
+                    <div class="small" th:text="${notiz.inhalt}" style="white-space: pre-wrap;"></div>
+                    <div class="text-muted" style="font-size:.7rem"
+                         th:text="${#temporals.format(notiz.erstelltAm, 'dd.MM.yyyy HH:mm')}"></div>
+                </div>
+                <form sec:authorize="hasAnyRole('ADMIN','MANAGER')"
+                      th:action="${deleteUrlPrefix + notiz.id + '/loeschen'}"
+                      method="post" class="flex-shrink-0">
+                    <button type="submit" class="btn btn-xs btn-outline-danger"
+                            title="Notiz löschen"
+                            onclick="return confirm('Notiz wirklich löschen?')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+            </div>
+        </li>
+    </ul>
+
+    <!-- Neue Notiz hinzufügen -->
+    <div sec:authorize="hasAnyRole('ADMIN','MANAGER')" class="card-footer-custom border-top">
+        <form th:action="${addUrl}" method="post">
+            <div class="mb-2">
+                <textarea name="inhalt" class="form-control form-control-sm"
+                          rows="2" placeholder="Neue Notiz…" maxlength="2000"></textarea>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>Hinzufügen
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

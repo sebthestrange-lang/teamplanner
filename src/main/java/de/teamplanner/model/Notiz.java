@@ -8,32 +8,37 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "teams")
+@Table(name = "notizen")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(of = "id")
-public class Team {
+public class Notiz {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Name darf nicht leer sein")
+    @NotBlank(message = "Notiz darf nicht leer sein")
+    @Lob
     @Column(nullable = false)
-    private String name;
+    private String inhalt;
 
-    @NotBlank(message = "Farbe darf nicht leer sein")
-    @Column(nullable = false)
-    private String farbe;
+    @CreationTimestamp
+    @Column(name = "erstellt_am", nullable = false, updatable = false)
+    private LocalDateTime erstelltAm;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "organisation_id", nullable = false)
     private Organisation organisation;
 
-    @CreationTimestamp
-    @Column(name = "erstellt_am", nullable = false, updatable = false)
-    private LocalDateTime erstelltAm;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private Team team;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mitarbeiter_id")
+    private Mitarbeiter mitarbeiter;
 }

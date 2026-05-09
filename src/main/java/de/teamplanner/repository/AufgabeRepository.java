@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AufgabeRepository extends JpaRepository<Aufgabe, Long>,
@@ -39,4 +40,12 @@ public interface AufgabeRepository extends JpaRepository<Aufgabe, Long>,
 
     @Query("SELECT COUNT(a) FROM Aufgabe a WHERE a.mitarbeiter.team = :team AND a.status = :status")
     long countByTeamAndStatus(@Param("team") Team team, @Param("status") AufgabenStatus status);
+
+    @Query("SELECT COUNT(a) FROM Aufgabe a WHERE a.organisation.id = :orgId AND a.status = :status")
+    long countByOrganisationIdAndStatus(@Param("orgId") Long orgId, @Param("status") AufgabenStatus status);
+
+    @Query("SELECT COUNT(a) FROM Aufgabe a WHERE a.organisation.id = :orgId AND a.faelligAm < :datum AND a.status != :status")
+    long countByOrganisationIdAndUeberfaellig(@Param("orgId") Long orgId, @Param("datum") LocalDate datum, @Param("status") AufgabenStatus status);
+
+    Optional<Aufgabe> findByIdAndOrganisationId(Long id, Long organisationId);
 }

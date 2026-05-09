@@ -113,6 +113,17 @@
         </div>
     </div>
 
+    <!-- Notizen -->
+    <div class="row g-4 mt-0">
+        <div class="col-12">
+            <th:block th:replace="~{fragments/notizen :: notizKarte(
+                ${notizen},
+                '/mitarbeiter/' + ${mitarbeiter.id} + '/notizen',
+                '/mitarbeiter/' + ${mitarbeiter.id} + '/notizen/'
+            )}"></th:block>
+        </div>
+    </div>
+
 </main>
 </body>
 </html>

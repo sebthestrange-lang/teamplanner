@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       lang="de">
 <head>
     <meta charset="UTF-8">
@@ -33,7 +34,11 @@
                 </div>
                 <span class="logo-text">Teamplanner</span>
             </a>
-            <div style="width:36px"></div>
+            <form th:action="@{/logout}" method="post" class="d-flex align-items-center">
+                <button type="submit" class="btn btn-sm p-0 border-0 bg-transparent text-white" title="Abmelden">
+                    <i class="bi bi-box-arrow-right fs-5"></i>
+                </button>
+            </form>
         </nav>
 
         <!-- Toast Container -->
@@ -62,6 +67,7 @@
             <div class="modal-footer border-0 pt-0">
                 <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Abbrechen</button>
                 <form id="loeschenForm" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                     <button type="submit" class="btn btn-sm btn-danger">Löschen</button>
                 </form>
             </div>

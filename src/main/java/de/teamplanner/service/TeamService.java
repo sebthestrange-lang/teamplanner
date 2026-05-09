@@ -1,5 +1,6 @@
 package de.teamplanner.service;
 
+import de.teamplanner.config.OrgContext;
 import de.teamplanner.exception.EntityNotFoundException;
 import de.teamplanner.model.Team;
 import de.teamplanner.repository.TeamRepository;
@@ -19,48 +20,38 @@ public class TeamService {
     private static final Logger log = LoggerFactory.getLogger(TeamService.class);
 
     private final TeamRepository teamRepository;
+    private final OrgContext orgContext;
 
-    /**
-     * Alle Teams alphabetisch sortiert.
-     */
     public List<Team> alleTeams() {
-        return teamRepository.findAll();
+        return teamRepository.findByOrganisationIdOrderByNameAsc(orgContext.getOrgId());
     }
 
-    /**
-     * Team anhand ID suchen.
-     */
     public Optional<Team> findById(Long id) {
-        return teamRepository.findById(id);
+        return teamRepository.findByIdAndOrganisationId(id, orgContext.getOrgId());
     }
 
-    /**
-     * Team anhand ID oder Exception.
-     */
     public Team findByIdOrThrow(Long id) {
-        return teamRepository.findById(id)
+        return teamRepository.findByIdAndOrganisationId(id, orgContext.getOrgId())
                 .orElseThrow(() -> new EntityNotFoundException("Team", id));
     }
 
-    /**
-     * Team anlegen oder aktualisieren.
-     */
     @Transactional
     public Team speichern(Team team) {
+        if (team.getId() == null) {
+            team.setOrganisation(orgContext.getOrganisation());
+        }
         log.debug("Speichere Team: {}", team.getName());
         return teamRepository.save(team);
     }
 
-    /**
-     * Team löschen.
-     */
     @Transactional
     public void loeschen(Long id) {
+        findByIdOrThrow(id);
         log.debug("Lösche Team mit ID {}", id);
         teamRepository.deleteById(id);
     }
 
     public long anzahl() {
-        return teamRepository.count();
+        return teamRepository.countByOrganisationId(orgContext.getOrgId());
     }
 }

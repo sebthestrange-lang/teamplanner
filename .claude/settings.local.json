@@ -16,7 +16,9 @@
       "Bash(xargs -I{} taskkill /F /PID {})",
       "Bash(cmd.exe /c \"for /f \\\\\"tokens=5\\\\\" %a in \\('netstat -aon ^| findstr :8080 ^| findstr LISTENING'\\) do taskkill /F /PID %a\")",
       "Bash(cmd.exe /c \"netstat -ano | findstr :8080 | findstr LISTENING\")",
-      "Bash(awk '/Exception processing template \"error\\\\/500\"/{found=1} !found' /tmp/app8083.log)"
+      "Bash(awk '/Exception processing template \"error\\\\/500\"/{found=1} !found' /tmp/app8083.log)",
+      "Bash(mvn compile *)",
+      "Bash(mvn clean *)"
     ]
   }
 }

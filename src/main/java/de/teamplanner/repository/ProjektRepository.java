@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProjektRepository extends JpaRepository<Projekt, Long>,
@@ -20,4 +21,8 @@ public interface ProjektRepository extends JpaRepository<Projekt, Long>,
     List<Projekt> findByTeamAndStatus(Team team, ProjektStatus status);
 
     long countByStatus(ProjektStatus status);
+
+    List<Projekt> findByOrganisationIdOrderByNameAsc(Long organisationId);
+
+    Optional<Projekt> findByIdAndOrganisationId(Long id, Long organisationId);
 }

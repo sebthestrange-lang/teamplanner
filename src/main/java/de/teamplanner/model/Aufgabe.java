@@ -33,6 +33,10 @@ public class Aufgabe {
     @JoinColumn(name = "mitarbeiter_id")
     private Mitarbeiter mitarbeiter;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "organisation_id", nullable = false)
+    private Organisation organisation;
+
     @NotBlank(message = "Titel darf nicht leer sein")
     @Column(nullable = false)
     private String titel;

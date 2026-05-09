@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}"
+      lang="de">
+<head><title>Organisationen</title></head>
+<body>
+<main layout:fragment="content">
+
+    <div class="page-header mb-4 d-flex justify-content-between align-items-center">
+        <h1 class="page-title mb-0"><i class="bi bi-building me-2"></i>Organisationen</h1>
+        <a th:href="@{/organisationen/neu}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Neue Organisation
+        </a>
+    </div>
+
+    <div class="card card-custom">
+        <div th:if="${#lists.isEmpty(organisationen)}" class="empty-state py-5">
+            <i class="bi bi-building text-muted" style="font-size:2.5rem"></i>
+            <p class="text-muted mt-2 mb-0">Noch keine Organisationen vorhanden</p>
+        </div>
+        <div th:unless="${#lists.isEmpty(organisationen)}" class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Erstellt am</th>
+                        <th class="text-end">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="org : ${organisationen}">
+                        <td class="fw-medium" th:text="${org.name}"></td>
+                        <td th:text="${#temporals.format(org.erstelltAm, 'dd.MM.yyyy')}"></td>
+                        <td class="text-end">
+                            <a th:href="@{/organisationen/{id}/bearbeiten(id=${org.id})}"
+                               class="btn btn-sm btn-outline-primary me-1">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                    th:onclick="'loeschenBestaetigen(\'/organisationen/' + ${org.id} + '/loeschen\')'">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>
