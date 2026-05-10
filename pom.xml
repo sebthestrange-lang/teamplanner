@@ -13,7 +13,7 @@
 
     <groupId>de.teamplanner</groupId>
     <artifactId>teamplanner</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>teamplanner</name>
     <description>Team und Aufgabenverwaltung</description>
 
@@ -90,6 +90,13 @@
                         </exclude>
                     </excludes>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
