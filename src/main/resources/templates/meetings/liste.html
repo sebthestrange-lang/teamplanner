@@ -43,8 +43,8 @@
                     <tr>
                         <th>Datum</th>
                         <th>Titel</th>
-                        <th>Team</th>
-                        <th>Notizen</th>
+                        <th class="d-none d-sm-table-cell">Team</th>
+                        <th class="d-none d-md-table-cell">Notizen</th>
                         <th class="text-end">Aktionen</th>
                     </tr>
                 </thead>
@@ -57,13 +57,13 @@
                                th:text="${m.titel}"
                                class="text-decoration-none text-dark fw-medium"></a>
                         </td>
-                        <td>
+                        <td class="d-none d-sm-table-cell">
                             <span th:if="${m.team != null}" class="badge"
                                   th:style="'background-color:' + ${m.team.farbe}"
                                   th:text="${m.team.name}"></span>
                             <span th:if="${m.team == null}" class="text-muted">—</span>
                         </td>
-                        <td class="text-muted small"
+                        <td class="text-muted small d-none d-md-table-cell"
                             th:text="${m.notizen != null and m.notizen.length() > 80}
                                 ? ${m.notizen.substring(0,80)} + '…'
                                 : ${m.notizen ?: '—'}"></td>

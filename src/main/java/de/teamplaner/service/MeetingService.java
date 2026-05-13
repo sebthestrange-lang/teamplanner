@@ -1,0 +1,47 @@
+package de.teamplaner.service;
+
+import de.teamplaner.config.OrgContext;
+import de.teamplaner.exception.EntityNotFoundException;
+import de.teamplaner.model.Meeting;
+import de.teamplaner.repository.MeetingRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class MeetingService {
+
+    private final MeetingRepository meetingRepository;
+    private final OrgContext orgContext;
+    private final AuditService auditService;
+
+    public List<Meeting> alle() {
+        return meetingRepository.findByOrganisationIdOrderByDatumDesc(orgContext.getOrgId());
+    }
+
+    public Meeting findByIdOrThrow(Long id) {
+        return meetingRepository.findByIdAndOrganisationId(id, orgContext.getOrgId())
+                .orElseThrow(() -> new EntityNotFoundException("Meeting", id));
+    }
+
+    @Transactional
+    public Meeting speichern(Meeting meeting) {
+        boolean isNeu = meeting.getId() == null;
+        if (isNeu) {
+            meeting.setOrganisation(orgContext.getOrganisation());
+        }
+        Meeting gespeichert = meetingRepository.save(meeting);
+        auditService.log("Meeting", gespeichert.getId(), isNeu ? "CREATE" : "UPDATE");
+        return gespeichert;
+    }
+
+    @Transactional
+    public void loeschen(Long id) {
+        findByIdOrThrow(id);
+        meetingRepository.deleteById(id);
+        auditService.log("Meeting", id, "DELETE");
+    }
+}

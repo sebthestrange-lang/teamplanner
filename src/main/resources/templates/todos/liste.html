@@ -16,21 +16,21 @@
         <div class="card-body py-3">
             <form th:action="@{/todos}" method="post" th:object="${schnellTodo}"
                   class="row g-2 align-items-end">
-                <div class="col-md-5">
+                <div class="col-12 col-md-5">
                     <input type="text" th:field="*{titel}"
                            th:class="'form-control' + (${#fields.hasErrors('titel')} ? ' is-invalid' : '')"
                            placeholder="Neues Todo eingeben...">
                     <div th:if="${#fields.hasErrors('titel')}" class="invalid-feedback"
                          th:errors="*{titel}"></div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-5 col-sm-4 col-md-3">
                     <input type="number" th:field="*{prioritaet}" class="form-control"
                            placeholder="Priorität (1=höchste)" min="1">
                 </div>
-                <div class="col-md-2">
+                <div class="col-7 col-sm-4 col-md-2">
                     <input type="date" th:field="*{faelligAm}" class="form-control">
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-sm-4 col-md-2">
                     <button type="submit" class="btn btn-primary w-100">
                         <i class="bi bi-plus-lg me-1"></i>Hinzufügen
                     </button>
@@ -44,6 +44,7 @@
         <div class="card-body py-2">
             <form th:action="@{/todos}" method="get" class="d-flex gap-2 align-items-center flex-wrap">
                 <!-- Status-Filter Buttons -->
+                <div class="filter-btn-scroll">
                 <div class="btn-group btn-group-sm" role="group">
                     <a th:href="@{/todos}" class="btn"
                        th:class="'btn btn-sm ' + (${filter.status == null or filter.status == ''} ? 'btn-primary' : 'btn-outline-secondary')">
@@ -65,6 +66,7 @@
                        th:class="'btn btn-sm ' + (${filter.status == 'heute'} ? 'btn-warning' : 'btn-outline-secondary')">
                         Heute
                     </a>
+                </div>
                 </div>
 
                 <!-- Suche -->
@@ -90,7 +92,7 @@
 
     <!-- Todo-Karten -->
     <div th:unless="${#lists.isEmpty(todos)}" class="row g-3">
-        <div th:each="todo : ${todos}" class="col-md-6 col-xl-4">
+        <div th:each="todo : ${todos}" class="col-sm-6 col-xl-4">
             <div class="card todo-card h-100"
                  th:classappend="${todo.erledigt} ? ' todo-erledigt' : (${todo.faelligAm != null and todo.faelligAm.isBefore(#temporals.createToday())} ? ' todo-ueberfaellig' : (${todo.faelligAm != null and todo.faelligAm.isEqual(#temporals.createToday())} ? ' todo-heute' : ''))"
                  th:style="'border-left: 4px solid ' + (${todo.prioritaet <= 2} ? '#ef4444' : (${todo.prioritaet <= 4} ? '#f59e0b' : '#6366f1'))">

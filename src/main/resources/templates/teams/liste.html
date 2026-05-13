@@ -24,7 +24,7 @@
     </div>
 
     <div th:unless="${#lists.isEmpty(teams)}" class="row g-3">
-        <div th:each="team : ${teams}" class="col-md-6 col-xl-4">
+        <div th:each="team : ${teams}" class="col-sm-6 col-xl-4">
             <th:block th:with="al=${auslastungen[team.id]}">
             <div class="card card-custom card-hover h-100">
                 <div class="card-body">

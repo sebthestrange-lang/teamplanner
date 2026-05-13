@@ -22,17 +22,17 @@
                 <thead>
                     <tr>
                         <th>Zeitpunkt</th>
-                        <th>Benutzer</th>
+                        <th class="d-none d-sm-table-cell">Benutzer</th>
                         <th>Aktion</th>
                         <th>Entität</th>
-                        <th>ID</th>
+                        <th class="d-none d-sm-table-cell">ID</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:each="e : ${eintraege}">
                         <td class="text-nowrap text-muted small"
                             th:text="${#temporals.format(e.zeitpunkt, 'dd.MM.yyyy HH:mm')}"></td>
-                        <td th:text="${e.benutzername}"></td>
+                        <td class="d-none d-sm-table-cell" th:text="${e.benutzername}"></td>
                         <td>
                             <span th:switch="${e.aktion}">
                                 <span th:case="'CREATE'" class="badge bg-success">Erstellt</span>
@@ -43,7 +43,7 @@
                             </span>
                         </td>
                         <td th:text="${e.entityType}"></td>
-                        <td class="text-muted" th:text="${e.entityId ?: '—'}"></td>
+                        <td class="text-muted d-none d-sm-table-cell" th:text="${e.entityId ?: '—'}"></td>
                     </tr>
                 </tbody>
             </table>

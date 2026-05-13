@@ -30,16 +30,16 @@
                 <thead>
                     <tr>
                         <th>Anzeigename</th>
-                        <th>Benutzername</th>
+                        <th class="d-none d-sm-table-cell">Benutzername</th>
                         <th>Rolle</th>
-                        <th>Status</th>
+                        <th class="d-none d-sm-table-cell">Status</th>
                         <th class="text-end">Aktionen</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:each="b : ${benutzer}">
                         <td th:text="${b.anzeigename}"></td>
-                        <td class="text-muted" th:text="${b.benutzername}"></td>
+                        <td class="text-muted d-none d-sm-table-cell" th:text="${b.benutzername}"></td>
                         <td>
                             <span th:switch="${b.rolle.name()}">
                                 <span th:case="'ADMIN'" class="badge bg-danger">Admin</span>
@@ -47,7 +47,7 @@
                                 <span th:case="'LESER'" class="badge bg-secondary">Leser</span>
                             </span>
                         </td>
-                        <td>
+                        <td class="d-none d-sm-table-cell">
                             <span th:if="${b.aktiv}" class="badge bg-success-subtle text-success">Aktiv</span>
                             <span th:unless="${b.aktiv}" class="badge bg-danger-subtle text-danger">Inaktiv</span>
                         </td>

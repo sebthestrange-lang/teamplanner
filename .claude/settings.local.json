@@ -26,7 +26,12 @@
       "Read(//mnt/c/Users/sebth/AppData/Local/Temp/claude/E--develop-workspace-teamplanner/a1538a7a-982f-4718-8740-6582dbfb9414/tasks/**)",
       "PowerShell(Start-Process -FilePath \"mvn\" -ArgumentList \"spring-boot:run\", \"-q\" -WorkingDirectory \"E:\\\\develop\\\\workspace\\\\teamplanner\" -NoNewWindow -RedirectStandardOutput \"$env:TEMP\\\\sb-out.txt\" -RedirectStandardError \"$env:TEMP\\\\sb-err.txt\")",
       "PowerShell(java *)",
-      "PowerShell(Start-Process -FilePath \"java\" -ArgumentList \"-jar\", \"E:\\\\develop\\\\workspace\\\\teamplanner\\\\target\\\\teamplanner-0.0.1-SNAPSHOT.jar\" -NoNewWindow -RedirectStandardOutput \"C:\\\\Users\\\\sebth\\\\AppData\\\\Local\\\\Temp\\\\teamplanner.log\" -RedirectStandardError \"C:\\\\Users\\\\sebth\\\\AppData\\\\Local\\\\Temp\\\\teamplanner-err.log\" -PassThru | Select-Object Id)"
+      "PowerShell(Start-Process -FilePath \"java\" -ArgumentList \"-jar\", \"E:\\\\develop\\\\workspace\\\\teamplanner\\\\target\\\\teamplanner-0.0.1-SNAPSHOT.jar\" -NoNewWindow -RedirectStandardOutput \"C:\\\\Users\\\\sebth\\\\AppData\\\\Local\\\\Temp\\\\teamplanner.log\" -RedirectStandardError \"C:\\\\Users\\\\sebth\\\\AppData\\\\Local\\\\Temp\\\\teamplanner-err.log\" -PassThru | Select-Object Id)",
+      "PowerShell(Rename-Item *)",
+      "Bash(cd /d \"E:\\\\develop\\\\workspace\\\\teamplanner\")",
+      "Bash(ren \"src\\\\main\\\\java\\\\de\\\\teamplanner\" \"teamplaner\")",
+      "Bash(cmd.exe /c \"ren \\\\\"E:\\\\\\\\develop\\\\\\\\workspace\\\\\\\\teamplanner\\\\\\\\src\\\\\\\\main\\\\\\\\java\\\\\\\\de\\\\\\\\teamplanner\\\\\" teamplaner\")",
+      "Bash(cmd.exe /c \"ren \\\\\"E:\\\\\\\\develop\\\\\\\\workspace\\\\\\\\teamplanner\\\\\\\\src\\\\\\\\main\\\\\\\\java\\\\\\\\de\\\\\\\\teamplaner\\\\\\\\TeamplannerApplication.java\\\\\" TeamPlanerApplication.java\")"
     ]
   }
 }

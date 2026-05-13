@@ -440,4 +440,68 @@ body {
     .card-footer-custom .btn {
         flex: 1 1 auto;
     }
+
+    /* Page title smaller on phones */
+    .page-title {
+        font-size: 1.25rem;
+    }
+}
+
+/* ===========================
+   Dashboard – Mobile (GridStack Override)
+   =========================== */
+@media (max-width: 767.98px) {
+    .grid-stack {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        height: auto !important;
+        gap: 8px;
+    }
+
+    .grid-stack > .grid-stack-item {
+        position: relative !important;
+        transform: none !important;
+        left: auto !important;
+        top: auto !important;
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+    }
+
+    /* Stat-Kacheln: 2 pro Zeile */
+    .grid-stack > .grid-stack-item[gs-id^="stat-"] {
+        width: calc(50% - 4px) !important;
+    }
+
+    .grid-stack > .grid-stack-item > .grid-stack-item-content {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 160px;
+    }
+
+    .grid-stack > .grid-stack-item[gs-id^="stat-"] > .grid-stack-item-content {
+        min-height: 80px;
+    }
+
+    .grid-stack > .grid-stack-item[gs-id="chart-status"] > .grid-stack-item-content,
+    .grid-stack > .grid-stack-item[gs-id="chart-team"] > .grid-stack-item-content {
+        min-height: 240px;
+    }
+}
+
+/* ===========================
+   Filter-Button-Gruppe scrollbar auf Mobile
+   =========================== */
+.filter-btn-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-shrink: 0;
+}
+.filter-btn-scroll .btn-group {
+    white-space: nowrap;
 }

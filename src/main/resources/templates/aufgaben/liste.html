@@ -26,7 +26,7 @@
     <div class="card card-custom mb-4">
         <div class="card-body py-3">
             <form th:action="@{/aufgaben}" method="get" class="row g-2 align-items-end">
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label small text-muted mb-1">Team</label>
                     <select name="teamId" class="form-select form-select-sm">
                         <option value="">Alle</option>
@@ -34,7 +34,7 @@
                                 th:selected="${filter.teamId == team.id}"></option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label small text-muted mb-1">Mitarbeiter</label>
                     <select name="mitarbeiterId" class="form-select form-select-sm">
                         <option value="">Alle</option>
@@ -43,7 +43,7 @@
                                 th:selected="${filter.mitarbeiterId == ma.id}"></option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label small text-muted mb-1">Projekt</label>
                     <select name="projektId" class="form-select form-select-sm">
                         <option value="">Alle</option>
@@ -51,7 +51,7 @@
                                 th:selected="${filter.projektId == p.id}"></option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label small text-muted mb-1">Status</label>
                     <select name="status" class="form-select form-select-sm">
                         <option value="">Alle</option>
@@ -60,7 +60,7 @@
                                 th:selected="${filter.status == s}"></option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label small text-muted mb-1">Priorität</label>
                     <select name="prioritaet" class="form-select form-select-sm">
                         <option value="">Alle</option>
@@ -69,7 +69,7 @@
                                 th:selected="${filter.prioritaet == p}"></option>
                     </select>
                 </div>
-                <div class="col-md-2 d-flex gap-1">
+                <div class="col-6 col-md-2 d-flex gap-1">
                     <button type="submit" class="btn btn-sm btn-primary flex-grow-1">
                         <i class="bi bi-funnel"></i>
                     </button>
@@ -93,11 +93,11 @@
                 <thead>
                     <tr>
                         <th>Aufgabe</th>
-                        <th>Projekt</th>
-                        <th>Mitarbeiter</th>
+                        <th class="d-none d-md-table-cell">Projekt</th>
+                        <th class="d-none d-md-table-cell">Mitarbeiter</th>
                         <th>Priorität</th>
                         <th>Status</th>
-                        <th>Fällig</th>
+                        <th class="d-none d-sm-table-cell">Fällig</th>
                         <th class="text-end">Aktionen</th>
                     </tr>
                 </thead>
@@ -109,14 +109,14 @@
                                th:text="${aufgabe.titel}"
                                class="text-decoration-none text-dark"></a>
                         </td>
-                        <td>
+                        <td class="d-none d-md-table-cell">
                             <a th:if="${aufgabe.projekt}"
                                th:href="@{/projekte/{id}(id=${aufgabe.projekt.id})}"
                                th:text="${aufgabe.projekt.name}"
                                class="text-decoration-none text-muted small"></a>
                             <span th:unless="${aufgabe.projekt}" class="text-muted">—</span>
                         </td>
-                        <td>
+                        <td class="d-none d-md-table-cell">
                             <span th:if="${aufgabe.mitarbeiter}" class="d-flex align-items-center gap-1">
                                 <span class="avatar-xs"
                                       th:style="'background-color:' + ${aufgabe.mitarbeiter.team?.farbe ?: '#6366f1'}"
@@ -133,7 +133,7 @@
                             <span th:class="'badge rounded-pill bg-' + ${aufgabe.status.bootstrapKlasse}"
                                   th:text="${aufgabe.status.bezeichnung}"></span>
                         </td>
-                        <td class="text-nowrap">
+                        <td class="text-nowrap d-none d-sm-table-cell">
                             <span th:if="${aufgabe.faelligAm}"
                                   th:text="${#temporals.format(aufgabe.faelligAm, 'dd.MM.yy')}"></span>
                             <span th:unless="${aufgabe.faelligAm}" class="text-muted">—</span>
